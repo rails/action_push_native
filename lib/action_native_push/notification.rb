@@ -1,0 +1,56 @@
+# frozen_string_literal: true
+
+module ActionNativePush
+  class Notification
+    attr_accessor :token, :title, :body, :badge, :thread_id, :sound, :high_priority, :platform_payload, :custom_payload
+
+    # Attributes
+    #
+    #   token - The device token to send the notification to
+    #   title - The title
+    #   body - The message body
+    #   badge - The badge number to display on the app icon
+    #   thread_id - The thread ID for grouping notifications
+    #   sound - The sound to play when the notification is received
+    #   high_priority - Whether to send the notification with high priority
+    #   platform_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
+    #   custom_payload - A hash of custom data to include in the notification
+    def initialize(token: nil, title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, platform_payload: {}, custom_payload: {})
+      @token = token
+      @title = title
+      @body = body
+      @badge = badge
+      @thread_id = thread_id
+      @sound = sound
+      @high_priority = high_priority
+      @platform_payload = platform_payload
+      @custom_payload = custom_payload
+    end
+
+    def deliver_to(device)
+      self.token = device.token
+      service_for(device).push(self)
+    rescue Errors::TokenError
+      Rails.logger.info("Device##{device.id} token is invalid")
+      device.on_token_error
+    end
+
+    def deliver_later_to(devices)
+      Array(devices).each do |device|
+        NotificationDeliveryJob.perform_later(self.as_json, device)
+      end
+    end
+
+    def as_json
+      { title: title, body: body, badge: badge, thread_id: thread_id, sound: sound, high_priority: high_priority, platform_payload: platform_payload.compact, custom_payload: custom_payload.compact }.compact
+    end
+
+    private
+      def service_for(device)
+        platform_config = ActionNativePush.configuration.platforms[device.platform.to_sym]
+        raise "ActionNativePush:: Platform #{device.platform} is not configured" unless platform_config
+        service_class = "ActionNativePush::Service::#{platform_config[:service].capitalize}".constantize
+        service_class.new(platform_config)
+      end
+  end
+end
