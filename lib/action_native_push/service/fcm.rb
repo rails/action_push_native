@@ -26,22 +26,22 @@ module ActionNativePush
 
           def as_json
             deep_compact({
-                message: {
-                  token: notification.token,
-                  # FCM requires data values to be strings.
-                  data: notification.custom_payload.compact.transform_values(&:to_s),
-                  android: {
-                    notification: {
-                      title: notification.title,
-                      body: notification.body,
-                      notification_count: notification.badge,
-                      sound: notification.sound
-                    },
-                    collapse_key: notification.thread_id,
-                    priority: notification.high_priority == true ? "high" : "normal"
-                  }
-                }.deep_merge(notification.platform_payload[:fcm])
-              })
+              message: {
+                token: notification.token,
+                # FCM requires data values to be strings.
+                data: notification.custom_payload.compact.transform_values(&:to_s),
+                android: {
+                  notification: {
+                    title: notification.title,
+                    body: notification.body,
+                    notification_count: notification.badge,
+                    sound: notification.sound
+                  },
+                  collapse_key: notification.thread_id,
+                  priority: notification.high_priority == true ? "high" : "normal"
+                }
+              }.deep_merge(notification.platform_payload[:fcm])
+            })
           end
 
           private
