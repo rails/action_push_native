@@ -6,7 +6,6 @@ module ActionNativePush
 
     # Attributes
     #
-    #   token - The device token to send the notification to
     #   title - The title
     #   body - The message body
     #   badge - The badge number to display on the app icon
@@ -15,8 +14,7 @@ module ActionNativePush
     #   high_priority - Whether to send the notification with high priority (default: true)
     #   platform_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
     #   custom_payload - A hash of custom data to include in the notification
-    def initialize(token: nil, title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, platform_payload: {}, custom_payload: {})
-      @token = token
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, platform_payload: {}, custom_payload: {})
       @title = title
       @body = body
       @badge = badge
