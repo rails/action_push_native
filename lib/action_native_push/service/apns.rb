@@ -80,23 +80,23 @@ module ActionNativePush
           Rails.logger.error("APNs response error #{code}: #{reason}")
 
           case [ code, reason ]
-          in [nil, _]
+          in [ nil, _ ]
             raise ActionNativePush::Errors::TimeoutError
-          in ["400", "BadDeviceToken"]
+          in [ "400", "BadDeviceToken" ]
             raise ActionNativePush::Errors::DeviceTokenError, reason
-          in ["400", _]
+          in [ "400", _ ]
             raise ActionNativePush::Errors::BadRequestError, reason
-          in ["403", _]
+          in [ "403", _ ]
             raise ActionNativePush::Errors::ForbiddenError, reason
-          in ["404", _]
+          in [ "404", _ ]
             raise ActionNativePush::Errors::NotFoundError, reason
-          in ["410", _]
+          in [ "410", _ ]
             raise ActionNativePush::Errors::ExpiredTokenError, reason
-          in ["413", _]
+          in [ "413", _ ]
             raise ActionNativePush::Errors::PayloadTooLargeError, reason
-          in ["429", _]
+          in [ "429", _ ]
             raise ActionNativePush::Errors::TooManyRequestsError, reason
-          in ["503", _]
+          in [ "503", _ ]
             raise ActionNativePush::Errors::ServiceUnavailableError, reason
           else
             raise ActionNativePush::Errors::InternalServerError, reason

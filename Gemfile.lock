@@ -54,6 +54,7 @@ GEM
     apnotic (1.7.2)
       connection_pool (~> 2)
       net-http2 (>= 0.18.3, < 2)
+    ast (2.4.3)
     base64 (0.3.0)
     benchmark (0.4.1)
     bigdecimal (3.2.2)
@@ -100,6 +101,8 @@ GEM
     json (2.12.2)
     jwt (2.10.1)
       base64
+    language_server-protocol (3.17.0.5)
+    lint_roller (1.1.0)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -129,9 +132,14 @@ GEM
     nokogiri (1.18.8-x86_64-linux-musl)
       racc (~> 1.4)
     os (1.1.4)
+    parallel (1.27.0)
+    parser (3.3.8.0)
+      ast (~> 2.4.1)
+      racc
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
+    prism (1.4.0)
     psych (5.2.6)
       date
       stringio
@@ -160,13 +168,44 @@ GEM
       rake (>= 12.2)
       thor (~> 1.0, >= 1.2.2)
       zeitwerk (~> 2.6)
+    rainbow (3.1.1)
     rake (13.3.0)
     rdoc (6.14.0)
       erb
       psych (>= 4.0.0)
+    regexp_parser (2.10.0)
     reline (0.6.1)
       io-console (~> 0.5)
     rexml (3.4.1)
+    rubocop (1.76.1)
+      json (~> 2.3)
+      language_server-protocol (~> 3.17.0.2)
+      lint_roller (~> 1.1.0)
+      parallel (~> 1.10)
+      parser (>= 3.3.0.2)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 2.9.3, < 3.0)
+      rubocop-ast (>= 1.45.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 4.0)
+    rubocop-ast (1.45.1)
+      parser (>= 3.3.7.2)
+      prism (~> 1.4)
+    rubocop-performance (1.25.0)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
+    rubocop-rails (2.32.0)
+      activesupport (>= 4.2.0)
+      lint_roller (~> 1.1)
+      rack (>= 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.44.0, < 2.0)
+    rubocop-rails-omakase (1.1.0)
+      rubocop (>= 1.72)
+      rubocop-performance (>= 1.24)
+      rubocop-rails (>= 2.30)
+    ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     securerandom (0.4.1)
     signet (0.20.0)
@@ -187,6 +226,9 @@ GEM
     timeout (0.4.3)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    unicode-display_width (3.1.4)
+      unicode-emoji (~> 4.0, >= 4.0.4)
+    unicode-emoji (4.0.4)
     uri (1.0.3)
     useragent (0.16.11)
     webmock (3.25.1)
@@ -208,6 +250,8 @@ PLATFORMS
 DEPENDENCIES
   action_native_push!
   mocha
+  rubocop
+  rubocop-rails-omakase
   sqlite3
   webmock
 

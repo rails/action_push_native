@@ -29,7 +29,7 @@ module ActionNativePush
             }
           }
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
-          with(body: payload.to_json, headers: { 'Authorization'=>'Bearer fake_access_token' }).
+          with(body: payload.to_json, headers: { "Authorization"=>"Bearer fake_access_token" }).
           to_return(status: 200)
 
         assert_nothing_raised do
@@ -57,7 +57,7 @@ module ActionNativePush
         @notification.platform_payload[:fcm] = { android: { collapse_key: "changed", notification: nil } }
         payload = { message: { token: "123", data: { person: "Jacopo", badge: "1" }, android: { collapse_key: "changed", priority: "normal" } } }
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
-          with(body: payload.to_json, headers: { 'Authorization'=>'Bearer fake_access_token' }).
+          with(body: payload.to_json, headers: { "Authorization"=>"Bearer fake_access_token" }).
           to_return(status: 200)
 
         assert_nothing_raised do

@@ -5,8 +5,8 @@ require_relative "lib/action_native_push/version"
 Gem::Specification.new do |spec|
   spec.name        = "action_native_push"
   spec.version     = ActionNativePush::VERSION
-  spec.authors = ["Jacopo Beschi"]
-  spec.email = ["jacopo@37signals.com"]
+  spec.authors = [ "Jacopo Beschi" ]
+  spec.email = [ "jacopo@37signals.com" ]
 
   spec.summary = "Send push notifications for mobile apps"
   spec.description = "Send push notifications for mobile apps"
