@@ -2,6 +2,8 @@
 
 module ActionNativePush
   class Device < ApplicationRecord
+    belongs_to :record, polymorphic: true, optional: true
+
     enum :platform, ActionNativePush.configuration.supported_platforms.index_with(&:itself), validate: true
 
     validates_presence_of :token
