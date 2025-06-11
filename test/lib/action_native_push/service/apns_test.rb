@@ -6,6 +6,7 @@ module ActionNativePush
       setup do
         @config = ActionNativePush.configuration.platforms[:ios]
         @apns = Apns.new(@config)
+        @notification = build_notification
       end
       teardown { Apns.connection_pools = {} }
 
@@ -13,23 +14,23 @@ module ActionNativePush
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
         Apns.connection_pools = { @config => connection_pool }
 
-        notification = build_notification
-        @apns.push(notification)
+        @apns.push(@notification)
 
         assert_equal 1, connection_pool.deliveries.size
 
         options = connection_pool.deliveries.first[:options]
         assert_equal 30, options[:timeout]
 
-        notification =  connection_pool.deliveries.first[:notification]
-        assert_equal "123", notification.token
-        assert_equal "Hi!", notification.alert[:title]
-        assert_equal "This is a push notification", notification.alert[:body]
-        assert_equal 1, notification.badge
-        assert_equal "12345", notification.thread_id
-        assert_equal "default", notification.sound
-        assert_equal "readable", notification.category
-        assert_equal "Jacopo", notification.custom_payload[:person]
+        delivered =  connection_pool.deliveries.first[:notification]
+        assert_equal "123", delivered.token
+        assert_equal "Hi!", delivered.alert[:title]
+        assert_equal "This is a push notification", delivered.alert[:body]
+        assert_equal 1, delivered.badge
+        assert_equal "12345", delivered.thread_id
+        assert_equal "default", delivered.sound
+        assert_equal "readable", delivered.category
+        assert_equal 5, delivered.priority
+        assert_equal "Jacopo", delivered.custom_payload[:person]
       end
 
       test "push response error" do
@@ -37,15 +38,27 @@ module ActionNativePush
         Apns.connection_pools = { @config => connection_pool }
 
         assert_raises ActionNativePush::Errors::BadRequestError do
-          @apns.push(build_notification)
+          @apns.push(@notification)
         end
 
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400", body: { reason: "BadDeviceToken" }))
         Apns.connection_pools = { @config => connection_pool }
 
         assert_raises ActionNativePush::Errors::DeviceTokenError do
-          @apns.push(build_notification)
+          @apns.push(@notification)
         end
+      end
+
+      test "push apns payload can be overridden" do
+        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
+        Apns.connection_pools = { @config => connection_pool }
+        @notification.platform_payload[:apns] = { priority: 10, "thread-id": "changed" }
+
+        @apns.push(@notification)
+
+        delivered =  connection_pool.deliveries.first[:notification]
+        assert_equal 10, delivered.priority
+        assert_equal "changed", delivered.thread_id
       end
 
       private

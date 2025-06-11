@@ -25,22 +25,34 @@ module ActionNativePush
           end
 
           def as_json
-            { message: {
-                token: notification.token,
-                # FCM requires data values to be strings.
-                data: notification.custom_payload.compact.transform_values(&:to_s),
-                # NOTE We are not extracting some fields which causes issues with the BC4 app.
-                # We'll take care of this during the gem extraction, overriding them to nil in BC4
-                # too keep the backward compatibility.
-                # See https://3.basecamp.com/2914079/buckets/41288943/documents/8709809935,
-                #     https://3.basecamp.com/2914079/buckets/41288943/todos/8714638582
-                android: { priority: notification.high_priority == true ? "high" : "normal" }.compact
-              }.deep_merge(notification.platform_payload[:fcm]).compact
-            }
+            deep_compact({
+                message: {
+                  token: notification.token,
+                  # FCM requires data values to be strings.
+                  data: notification.custom_payload.compact.transform_values(&:to_s),
+                  android: {
+                    notification: {
+                      title: notification.title,
+                      body: notification.body,
+                      notification_count: notification.badge,
+                      sound: notification.sound
+                    },
+                    collapse_key: notification.thread_id,
+                    priority: notification.high_priority == true ? "high" : "normal"
+                  }
+                }.deep_merge(notification.platform_payload[:fcm])
+              })
           end
 
           private
             attr_reader :notification
+
+            def deep_compact(payload)
+              payload.dig(:message, :android, :notification).try(&:compact!)
+              payload.dig(:message, :android).try(&:compact!)
+              payload[:message].compact!
+              payload
+            end
         end
 
         def payload_from(notification)

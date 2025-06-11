@@ -50,6 +50,8 @@ module ActionNativePush
           end
         end
 
+        PRIORITIES = { high: 10, normal: 5 }.freeze
+
         def apnotic_notification_from(notification)
           Apnotic::Notification.new(notification.token).tap do |n|
             n.topic = config.fetch(:topic)
@@ -57,6 +59,7 @@ module ActionNativePush
             n.badge = notification.badge
             n.thread_id = notification.thread_id
             n.sound = notification.sound
+            n.priority = notification.high_priority ? PRIORITIES[:high] : PRIORITIES[:normal]
             notification.platform_payload[:apns].each do |key, value|
               n.public_send("#{key.to_s.underscore}=", value)
             end
