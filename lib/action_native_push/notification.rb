@@ -2,7 +2,13 @@
 
 module ActionNativePush
   class Notification
-    attr_accessor :token, :title, :body, :badge, :thread_id, :sound, :high_priority, :platform_payload, :custom_payload
+    include ActiveSupport::Callbacks
+
+    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :platform_payload, :custom_payload
+    attr_accessor :token
+
+    define_callbacks :delivery
+    set_callback     :delivery, :before, :before_delivery
 
     # Attributes
     #
@@ -30,7 +36,9 @@ module ActionNativePush
 
       self.token = device.token
       begin
-        service_for(device).push(self)
+        run_callbacks :delivery do |args|
+          service_for(device).push(self)
+        end
       rescue Errors::TokenError
         Rails.logger.info("Device##{device.id} token is invalid")
         device.on_token_error
@@ -45,6 +53,10 @@ module ActionNativePush
 
     def as_json
       { title: title, body: body, badge: badge, thread_id: thread_id, sound: sound, high_priority: high_priority, platform_payload: platform_payload.compact, custom_payload: custom_payload.compact }.compact
+    end
+
+    def before_delivery(&block)
+      block ? @before_delivery = block : @before_delivery&.call(self)
     end
 
     private
