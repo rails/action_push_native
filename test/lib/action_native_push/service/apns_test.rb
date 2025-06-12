@@ -97,8 +97,7 @@ module ActionNativePush
         end
 
         def build_notification
-          ActionNativePush::Notification.new \
-            token: "123",
+          ActionNativePush::Notification.new(
             title: "Hi!",
             body: "This is a push notification",
             badge: 1,
@@ -107,6 +106,9 @@ module ActionNativePush
             high_priority: false,
             platform_payload: { apns: { category: "readable" } },
             custom_payload: { person: "Jacopo" }
+          ).tap do |notification|
+            notification.token = "123"
+          end
         end
     end
   end

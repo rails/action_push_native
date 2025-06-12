@@ -67,8 +67,7 @@ module ActionNativePush
 
       private
         def build_notification
-          ActionNativePush::Notification.new \
-            token: "123",
+          ActionNativePush::Notification.new(
             title: "Hi!",
             body: "This is a push notification",
             badge: 1,
@@ -77,6 +76,9 @@ module ActionNativePush
             high_priority: false,
             platform_payload: { fcm:  { android: { collapse_key: "321" }.compact } },
             custom_payload: { person: "Jacopo", badge: 1 }
+          ).tap do |notification|
+            notification.token = "123"
+          end
         end
 
         def stub_authorizer
