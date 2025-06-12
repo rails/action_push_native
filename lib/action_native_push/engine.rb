@@ -7,9 +7,9 @@ module ActionNativePush
     config.action_native_push = ActiveSupport::OrderedOptions.new
 
     initializer "action_native_push.config" do |app|
-      app.paths.add "config/action_native_push", with: "config/action_native_push.yml"
+      app.paths.add "config/push", with: "config/push.yml"
 
-      config_path = Pathname.new(app.config.paths["config/action_native_push"].first)
+      config_path = Pathname.new(app.config.paths["config/push"].first)
       options = config_path.exist? ? app.config_for(config_path).to_h : {}
 
       options[:job_queue_name] = config.action_native_push.job_queue_name if config.action_native_push.job_queue_name
