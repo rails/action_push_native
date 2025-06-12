@@ -4,7 +4,7 @@ module ActionNativePush
   class Notification
     include ActiveSupport::Callbacks
 
-    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :platform_payload, :custom_payload
+    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :service_payload, :custom_payload
     attr_accessor :token
 
     define_callbacks :delivery
@@ -18,16 +18,17 @@ module ActionNativePush
     #   thread_id - The thread ID for grouping notifications
     #   sound - The sound to play when the notification is received
     #   high_priority - Whether to send the notification with high priority (default: true)
-    #   platform_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
+    #   service_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
+    #   platform_payload - temporary field used for backward compatibility, will be removed in future versions
     #   custom_payload - A hash of custom data to include in the notification
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, platform_payload: {}, custom_payload: {})
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, platform_payload: {}, custom_payload: {})
       @title = title
       @body = body
       @badge = badge
       @thread_id = thread_id
       @sound = sound
       @high_priority = high_priority
-      @platform_payload = platform_payload
+      @service_payload = service_payload.present? ? service_payload : platform_payload
       @custom_payload = custom_payload
     end
 
@@ -52,7 +53,7 @@ module ActionNativePush
     end
 
     def as_json
-      { title: title, body: body, badge: badge, thread_id: thread_id, sound: sound, high_priority: high_priority, platform_payload: platform_payload.compact, custom_payload: custom_payload.compact }.compact
+      { title: title, body: body, badge: badge, thread_id: thread_id, sound: sound, high_priority: high_priority, service_payload: service_payload.compact, custom_payload: custom_payload.compact }.compact
     end
 
     def before_delivery(&block)
@@ -61,10 +62,10 @@ module ActionNativePush
 
     private
       def service_for(device)
-        platform_config = ActionNativePush.configuration.platforms[device.platform.to_sym]
-        raise "ActionNativePush:: Platform #{device.platform} is not configured" unless platform_config
-        service_class = "ActionNativePush::Service::#{platform_config[:service].capitalize}".constantize
-        service_class.new(platform_config)
+        application_config = ActionNativePush.configuration.applications[device.application.to_sym]
+        raise "ActionNativePush:: Application #{device.application} is not configured" unless application_config
+        service_class = "ActionNativePush::Service::#{application_config[:service].capitalize}".constantize
+        service_class.new(application_config)
       end
   end
 end

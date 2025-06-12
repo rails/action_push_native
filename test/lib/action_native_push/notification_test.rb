@@ -11,7 +11,7 @@ module ActionNativePush
                      thread_id: "12345",
                      sound: "default",
                      high_priority: false,
-                     platform_payload: { apns: { category: "readable" } },
+                     service_payload: { apns: { category: "readable" } },
                      custom_payload: { person: "Jacopo" } }, @notification.as_json)
     end
 
@@ -26,7 +26,7 @@ module ActionNativePush
 
       apns = stub(:apns)
       apns.expects(:push).with(@notification)
-      ActionNativePush::Service::Apns.expects(:new).with(ActionNativePush.configuration.platforms[:ios]).returns(apns)
+      ActionNativePush::Service::Apns.expects(:new).with(ActionNativePush.configuration.applications[:ios]).returns(apns)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)
@@ -38,7 +38,7 @@ module ActionNativePush
 
       fcm = stub(:fcm)
       fcm.expects(:push).with(@notification)
-      ActionNativePush::Service::Fcm.expects(:new).with(ActionNativePush.configuration.platforms[:android]).returns(fcm)
+      ActionNativePush::Service::Fcm.expects(:new).with(ActionNativePush.configuration.applications[:android]).returns(fcm)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)
@@ -87,7 +87,7 @@ module ActionNativePush
           thread_id: "12345",
           sound: "default",
           high_priority: false,
-          platform_payload: {
+          service_payload: {
             apns: { category: "readable" },
             fcm:  nil
           },

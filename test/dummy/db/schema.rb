@@ -13,7 +13,7 @@
 ActiveRecord::Schema[8.0].define(version: 2025_06_10_133121) do
   create_table "action_native_push_devices", force: :cascade do |t|
     t.string "name"
-    t.string "platform", null: false
+    t.string "application", null: false
     t.string "token", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

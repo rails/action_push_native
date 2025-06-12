@@ -4,7 +4,7 @@ module ActionNativePush
   module Service
     class ApnsTest < ActiveSupport::TestCase
       setup do
-        @config = ActionNativePush.configuration.platforms[:ios]
+        @config = ActionNativePush.configuration.applications[:ios]
         @apns = Apns.new(@config)
         @notification = build_notification
       end
@@ -52,7 +52,7 @@ module ActionNativePush
       test "push apns payload can be overridden" do
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
         Apns.connection_pools = { @config => connection_pool }
-        @notification.platform_payload[:apns] = { priority: 10, "thread-id": "changed" }
+        @notification.service_payload[:apns] = { priority: 10, "thread-id": "changed" }
 
         @apns.push(@notification)
 
@@ -104,7 +104,7 @@ module ActionNativePush
             thread_id: "12345",
             sound: "default",
             high_priority: false,
-            platform_payload: { apns: { category: "readable" } },
+            service_payload: { apns: { category: "readable" } },
             custom_payload: { person: "Jacopo" }
           ).tap do |notification|
             notification.token = "123"

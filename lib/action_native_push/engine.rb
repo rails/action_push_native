@@ -16,7 +16,7 @@ module ActionNativePush
       options[:log_job_arguments] = config.action_native_push.log_job_arguments if config.action_native_push.log_job_arguments
       options[:report_job_retries] = config.action_native_push.report_job_retries if config.action_native_push.report_job_retries
       options[:enabled] = config.action_native_push.enabled if config.action_native_push.enabled
-      options[:platforms] = config.action_native_push.platforms if config.action_native_push.platforms
+      options[:applications] = config.action_native_push.applications if config.action_native_push.applications
 
       ActionNativePush.configuration = ActionNativePush::Configuration.new(**options)
     end

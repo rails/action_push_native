@@ -40,7 +40,7 @@ module ActionNativePush
                   collapse_key: notification.thread_id,
                   priority: notification.high_priority == true ? "high" : "normal"
                 }
-              }.deep_merge(notification.platform_payload[:fcm])
+              }.deep_merge(notification.service_payload[:fcm])
             })
           end
 

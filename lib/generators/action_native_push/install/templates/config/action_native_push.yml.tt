@@ -5,8 +5,8 @@ shared:
   # Useful to monitor initial rollouts.
   # report_job_retries: true
 
-  platforms:
-    # Each platform consists of a service and its configuration.
+  applications:
+    # Each application consists of a service and its configuration.
     # Currently supported services are: APNs and FCM.
 
     ios:

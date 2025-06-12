@@ -5,7 +5,7 @@ module ActionNativePush
     belongs_to :record, polymorphic: true, optional: true
 
     # E.g. { "ios" => "ios", "android" => "android" }
-    enum :platform, ActionNativePush.configuration.supported_platforms.index_with(&:itself), validate: true
+    enum :application, ActionNativePush.configuration.supported_applications.index_with(&:itself), validate: true
 
     validates_presence_of :token
 

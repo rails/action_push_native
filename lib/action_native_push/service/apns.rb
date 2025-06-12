@@ -10,7 +10,7 @@ module ActionNativePush
         @config = config
       end
 
-      # Per-platform connection pools
+      # Per-application connection pools
       cattr_accessor :connection_pools
 
       def push(notification)
@@ -60,7 +60,7 @@ module ActionNativePush
             n.thread_id = notification.thread_id
             n.sound = notification.sound
             n.priority = notification.high_priority ? PRIORITIES[:high] : PRIORITIES[:normal]
-            notification.platform_payload[:apns].each do |key, value|
+            notification.service_payload[:apns].each do |key, value|
               n.public_send("#{key.to_s.underscore}=", value)
             end
             n.custom_payload = notification.custom_payload

@@ -4,7 +4,7 @@ module ActionNativePush
   module Service
     class FcmTest < ActiveSupport::TestCase
       setup do
-        @config = ActionNativePush.configuration.platforms[:android]
+        @config = ActionNativePush.configuration.applications[:android]
         @fcm = Fcm.new(@config)
         stub_authorizer
         @notification = build_notification
@@ -54,7 +54,7 @@ module ActionNativePush
       end
 
       test "push fcm payload can be overridden" do
-        @notification.platform_payload[:fcm] = { android: { collapse_key: "changed", notification: nil } }
+        @notification.service_payload[:fcm] = { android: { collapse_key: "changed", notification: nil } }
         payload = { message: { token: "123", data: { person: "Jacopo", badge: "1" }, android: { collapse_key: "changed", priority: "normal" } } }
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
           with(body: payload.to_json, headers: { "Authorization"=>"Bearer fake_access_token" }).
@@ -74,7 +74,7 @@ module ActionNativePush
             thread_id: "12345",
             sound: "default",
             high_priority: false,
-            platform_payload: { fcm:  { android: { collapse_key: "321" }.compact } },
+            service_payload: { fcm:  { android: { collapse_key: "321" }.compact } },
             custom_payload: { person: "Jacopo", badge: 1 }
           ).tap do |notification|
             notification.token = "123"
