@@ -18,8 +18,11 @@ module ActionNativePush
 
         connection_pool.with do |connection|
           rescue_and_reraise_network_errors do
+            apnotic_notification = apnotic_notification_from(notification)
+            Rails.logger.info("Pushing APNs notification: #{apnotic_notification.apns_id}")
+
             response = connection.push \
-              apnotic_notification_from(notification),
+              apnotic_notification,
               timeout: config[:request_timeout] || DEFAULT_TIMEOUT
             raise connection_error if connection_error
             handle_response_error(response) unless response&.ok?
