@@ -6,6 +6,7 @@ PATH
       activerecord (>= 8.0)
       apnotic (~> 1.7)
       googleauth (~> 1.14)
+      net-http (~> 0.6)
       railties (>= 8.0)
 
 GEM
