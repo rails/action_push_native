@@ -62,10 +62,10 @@ module ActionNativePush
 
     private
       def service_for(device)
-        application_config = ActionNativePush.configuration.applications[device.application.to_sym]
-        raise "ActionNativePush:: Application #{device.application} is not configured" unless application_config
-        service_class = "ActionNativePush::Service::#{application_config[:service].capitalize}".constantize
-        service_class.new(application_config)
+        service_config = ActionNativePush.configuration.applications[device.application.to_sym]
+        raise "ActionNativePush:: Application #{device.application} is not configured" unless service_config
+        service_class = "ActionNativePush::Service::#{service_config[:service].capitalize}".constantize
+        service_class.new(service_config)
       end
   end
 end
