@@ -52,12 +52,12 @@ module ActionNativePush
       end
     end
 
-    def as_json
-      { title: title, body: body, badge: badge, thread_id: thread_id, sound: sound, high_priority: high_priority, service_payload: service_payload.compact, custom_payload: custom_payload.compact }.compact
-    end
-
     def before_delivery(&block)
       block ? @before_delivery = block : @before_delivery&.call(self)
+    end
+
+    def as_json
+      { title: title, body: body, badge: badge, thread_id: thread_id, sound: sound, high_priority: high_priority, service_payload: service_payload.compact, custom_payload: custom_payload.compact }.compact
     end
 
     private
