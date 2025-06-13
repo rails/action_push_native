@@ -21,16 +21,16 @@ module ActionNativePush
         options = connection_pool.deliveries.first[:options]
         assert_equal 30, options[:timeout]
 
-        delivered =  connection_pool.deliveries.first[:notification]
-        assert_equal "123", delivered.token
-        assert_equal "Hi!", delivered.alert[:title]
-        assert_equal "This is a push notification", delivered.alert[:body]
-        assert_equal 1, delivered.badge
-        assert_equal "12345", delivered.thread_id
-        assert_equal "default", delivered.sound
-        assert_equal "readable", delivered.category
-        assert_equal 5, delivered.priority
-        assert_equal "Jacopo", delivered.custom_payload[:person]
+        delivery =  connection_pool.deliveries.first[:notification]
+        assert_equal "123", delivery.token
+        assert_equal "Hi!", delivery.alert[:title]
+        assert_equal "This is a push notification", delivery.alert[:body]
+        assert_equal 1, delivery.badge
+        assert_equal "12345", delivery.thread_id
+        assert_equal "default", delivery.sound
+        assert_equal "readable", delivery.category
+        assert_equal 5, delivery.priority
+        assert_equal "Jacopo", delivery.custom_payload[:person]
       end
 
       test "push response error" do
@@ -56,9 +56,9 @@ module ActionNativePush
 
         @apns.push(@notification)
 
-        delivered =  connection_pool.deliveries.first[:notification]
-        assert_equal 10, delivered.priority
-        assert_equal "changed", delivered.thread_id
+        delivery =  connection_pool.deliveries.first[:notification]
+        assert_equal 10, delivery.priority
+        assert_equal "changed", delivery.thread_id
       end
 
       private
