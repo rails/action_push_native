@@ -3,6 +3,7 @@
 module ActionNativePush::Errors
   class TimeoutError < StandardError; end
   class BadRequestError < StandardError; end
+  class ConnectionError < StandardError; end
   class TokenError < StandardError; end
   class DeviceTokenError < TokenError; end
   class ForbiddenError < StandardError; end

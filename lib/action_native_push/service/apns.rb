@@ -17,11 +17,13 @@ module ActionNativePush
         reset_connection_error
 
         connection_pool.with do |connection|
-          response = connection.push \
-            apnotic_notification_from(notification),
-            timeout: config[:request_timeout] || DEFAULT_TIMEOUT
-          handle_connection_error(connection_error) if connection_error
-          handle_response_error(response) unless response&.ok?
+          rescue_and_reraise_network_errors do
+            response = connection.push \
+              apnotic_notification_from(notification),
+              timeout: config[:request_timeout] || DEFAULT_TIMEOUT
+            raise connection_error if connection_error
+            handle_response_error(response) unless response&.ok?
+          end
         end
       end
 
@@ -50,6 +52,22 @@ module ActionNativePush
           end
         end
 
+        def rescue_and_reraise_network_errors
+          begin
+            yield
+          rescue Errno::ETIMEDOUT => e
+            raise ActionNativePush::Errors::TimeoutError, e.message
+          rescue Errno::ECONNRESET, Errno::ECONNREFUSED, SocketError => e
+            raise ActionNativePush::Errors::ConnectionError, e.message
+          rescue OpenSSL::SSL::SSLError => e
+            if e.message.include?("SSL_connect")
+              raise ActionNativePush::Errors::ConnectionError, e.message
+            else
+              raise
+            end
+          end
+        end
+
         PRIORITIES = { high: 10, normal: 5 }.freeze
 
         def apnotic_notification_from(notification)
@@ -65,12 +83,6 @@ module ActionNativePush
             end
             n.custom_payload = notification.custom_payload
           end
-        end
-
-        def handle_connection_error(error)
-          Rails.logger.error("APNs connection error: #{error.message}")
-          # Bubble up connection errors, let job handle retries.
-          raise error
         end
 
         def handle_response_error(response)
