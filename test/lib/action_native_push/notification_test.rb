@@ -64,7 +64,7 @@ module ActionNativePush
       ActionNativePush.configuration.enabled = previously_enabled
     end
 
-    test "deliver_to runs before_delivery callback" do
+    test "deliver_to before_delivery callback" do
       device = action_native_push_devices(:iphone)
       callback_called = false
       ActionNativePush::Service::Apns.any_instance.stubs(:push)
