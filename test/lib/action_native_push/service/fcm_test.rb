@@ -73,7 +73,7 @@ module ActionNativePush
             thread_id: "12345",
             sound: "default",
             high_priority: false,
-            service_payload: { 
+            service_payload: {
               apns: { category: "readable" },
               fcm:  { android: { collapse_key: "321" }.compact } },
             custom_payload: { person: "Jacopo", badge: 1 }
