@@ -47,7 +47,8 @@ module ActionNativePush
             key_id: config.fetch(:key_id),
             team_id: config.fetch(:team_id)
           }, size: config[:connection_pool_size] || DEFAULT_POOL_SIZE) do |connection|
-            # Prevent the main thread from crashing collecting errors and handling them afterwards.
+            # Prevents the main thread from crashing collecting the connection error from the off-thread
+            # and raising it afterwards.
             connection.on(:error) { |error| @connection_error = error }
           end
         end
