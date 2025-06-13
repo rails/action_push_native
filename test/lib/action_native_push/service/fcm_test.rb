@@ -4,10 +4,9 @@ module ActionNativePush
   module Service
     class FcmTest < ActiveSupport::TestCase
       setup do
-        @config = ActionNativePush.configuration.applications[:android]
-        @fcm = Fcm.new(@config)
-        stub_authorizer
+        @fcm = Fcm.new(ActionNativePush.configuration.applications[:android])
         @notification = build_notification
+        stub_authorizer
       end
 
       test "push" do
@@ -74,7 +73,9 @@ module ActionNativePush
             thread_id: "12345",
             sound: "default",
             high_priority: false,
-            service_payload: { fcm:  { android: { collapse_key: "321" }.compact } },
+            service_payload: { 
+              apns: { category: "readable" },
+              fcm:  { android: { collapse_key: "321" }.compact } },
             custom_payload: { person: "Jacopo", badge: 1 }
           ).tap do |notification|
             notification.token = "123"
