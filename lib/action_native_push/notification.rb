@@ -37,7 +37,7 @@ module ActionNativePush
 
       self.token = device.token
       begin
-        run_callbacks :delivery do |args|
+        run_callbacks :delivery do
           service_for(device).push(self)
         end
       rescue Errors::TokenError
