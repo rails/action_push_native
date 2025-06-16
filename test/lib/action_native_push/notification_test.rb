@@ -76,6 +76,13 @@ module ActionNativePush
       @notification.deliver_to(device)
 
       assert callback_called, "before_deliver callback was not called"
+
+      ActionNativePush::Service::Apns.any_instance.expects(:push).never
+      @notification.before_delivery do |notification|
+        throw :abort
+      end
+
+      @notification.deliver_to(device)
     end
 
     private
