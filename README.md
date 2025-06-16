@@ -103,6 +103,9 @@ You can also specify a global `before_delivery` callback to modify or cancel the
    custom_payload: {
      calendar_id: @calendar.id,
      identity_id: @identity.id
+   },
+   context: {
+     calendar_id: @calendar.id
    }
 
   notification.deliver_later_to(device)
