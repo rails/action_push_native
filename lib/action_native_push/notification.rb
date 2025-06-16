@@ -3,7 +3,7 @@
 module ActionNativePush
   # = Action Native Push Notification
   #
-  # A notification that can be sent to devices.
+  # A notification that can be delivered to devices.
   class Notification
     include ActiveSupport::Callbacks
 
