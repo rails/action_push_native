@@ -12,5 +12,3 @@ group :rubocop do
   gem "rubocop"
   gem "rubocop-rails-omakase"
 end
-
-gem "debug"
