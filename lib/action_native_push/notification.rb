@@ -8,6 +8,7 @@ module ActionNativePush
     include ActiveSupport::Callbacks
 
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :service_payload, :custom_payload
+    attr_accessor :context
     attr_accessor :token
 
     define_callbacks :delivery
@@ -34,7 +35,8 @@ module ActionNativePush
     #   service_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
     #   platform_payload - temporary field used for in-flight jobs backward compatibility, will be removed in future versions
     #   custom_payload - A hash of custom data to include in the notification
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, platform_payload: {}, custom_payload: {})
+    #   context - A hash of additional context data that won't be sent to the device, but can be used in callbacks
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, platform_payload: {}, custom_payload: {}, context: {})
       @title = title
       @body = body
       @badge = badge
@@ -43,6 +45,7 @@ module ActionNativePush
       @high_priority = high_priority
       @service_payload = service_payload.present? ? service_payload : platform_payload
       @custom_payload = custom_payload
+      @context = context
     end
 
     def deliver_to(device)
@@ -74,7 +77,8 @@ module ActionNativePush
         sound: sound,
         high_priority: high_priority,
         service_payload: service_payload.compact,
-        custom_payload: custom_payload.compact
+        custom_payload: custom_payload.compact,
+        context: context
       }.compact
     end
 

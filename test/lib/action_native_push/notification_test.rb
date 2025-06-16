@@ -12,7 +12,8 @@ module ActionNativePush
                      sound: "default",
                      high_priority: false,
                      service_payload: { apns: { category: "readable" } },
-                     custom_payload: { person: "Jacopo" } }, @notification.as_json)
+                     custom_payload: { person: "Jacopo" },
+                     context: {} }, @notification.as_json)
     end
 
     test "deliver_later_to" do

@@ -96,7 +96,7 @@ You can also specify a global `before_delivery` callback to modify or cancel the
 
 ```ruby
   ActionNativePush::Notification.before_delivery = do |notification|
-    throw :abort if Calendar.find(notification.custom_payload[:calendar_id]).expired?
+    throw :abort if Calendar.find(notification.context[:calendar_id]).expired?
   end
 
   notification = ActionNativePush::Notification.new \
