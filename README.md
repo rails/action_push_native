@@ -1,28 +1,135 @@
-# ActionNativePush
-Short description and motivation.
+# Action Native Push
 
-## Usage
-How to use my plugin.
+Action Native Push is a Rails push notification gem for mobile platforms, supporting FCM (Android) and APNs (iOS).
 
 ## Installation
-Add this line to your application's Gemfile:
 
 ```ruby
-gem "action_native_push"
+1. bundle add action_native_push
+2. bin/rails action_native_push:install
+3. bin/rails db:migrate
 ```
 
-And then execute:
-```bash
-$ bundle
+This will install the gem and run the necessary migrations to set up the database.
+
+## Configuration
+
+The installation will create a `config/push.yml` file with a default configuration for iOS
+and Android applications. To send notifications, you need to set up credentials for each configured application.
+You can add as many applications as you like, as long as each one is configured
+with a supported notification service (FCM or APNs).
+
+Example `config/push.yml`:
+
+```yaml
+shared:
+  applications:
+    ios:
+      service: apns
+      # Token auth params
+      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+      key_id: your_key_id
+      encryption_key: your_apple_encryption_key
+      team_id: your_apple_team_id
+      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
+      topic: your.bundle.identifier
+    android:
+      service: fcm
+      # Your Firebase project service account credentials
+      # See https://firebase.google.com/docs/cloud-messaging/auth-server
+      encryption_key: your_service_account_json_file
+      # Firebase project_id
+      project_id: your_project_id
 ```
 
-Or install it yourself as:
-```bash
-$ gem install action_native_push
+## Usage
+
+### Create and send a notification asynchronously to a device
+
+```ruby
+device = Device.create! \
+  name: "iPhone 16",
+  token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
+  application: "ios"
+
+notification = ActionNativePush::Notification.new \
+  title: "Hello world!",
+  body:  "Welcome to Action Native Push",
+
+notification.deliver_later_to(device)
 ```
 
-## Contributing
-Contribution directions go here.
+A notification can also be delivered synchronously using `deliver_to`:
+
+```ruby
+notification.deliver_to(device)
+```
+
+It is recommended to send notifications asynchronously using `deliver_later_to`.
+This ensures error handling and retry logic are in place, and avoids blocking your application's execution.
+
+### Custom service payload
+
+You can configure a custom service payload to be sent with the notification. This is useful when you
+need to send additional data that is specific to the service you are using (e.g., FCM or APNs).
+
+```ruby
+ActionNativePush::Notification.new \
+  service_payload: {
+    apns: { category: "observable", content_available: 1 }
+  },
+  custom_payload: {
+    calendar_id: @calendar.id,
+    identity_id: @identity.id
+  }
+```
+
+This will configure APNs to send a silent notification with the `observable` category.
+The valid keys are `apns` for Apple Push Notification Service and `fcm` for Firebase Cloud
+Messaging.
+
+### `before_delivery` callback
+
+You can also specify a `before_delivery` callback to modify or cancel the notification before it is sent:
+
+```ruby
+  notification = ActionNativePush::Notification.new \
+   custom_payload: {
+     calendar_id: @calendar.id,
+     identity_id: @identity.id
+   }
+  notification.before_delivery { |n| throw :abort if Calendar.find(n.custom_payload[:calendar_id]).expired? }
+
+  notification.deliver_later_to(device)
+```
+
+### Linking a device to a record
+
+A Device can be associated with any record in your application via the `record` polymorphic association:
+
+```ruby
+  user = User.find_by_email_address("jacopo@37signals.com")
+
+  Device.create! \
+    name: "iPhone 16",
+    token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
+    application: "ios"
+    record: user
+```
+
+### `ActionNativePush::Notification` options
+
+| Option           | Description
+|------------------|------------
+| :title           | The title of the notification.
+| :body            | The body of the notification.
+| :badge           | The badge number to display on the app icon
+| :thread_id       | The thread identifier for grouping notifications.
+| :sound           | The sound to play when the notification is received.
+| :high_priority   | Whether the notification should be sent with high priority (default: true).
+| :service_payload | The service-specific payload for the notification. Valid subkeys are `apns` for Apple Push Notification Service and `fcm` for Firebase Cloud Messaging.
+| :custom_payload  | Custom payload data to be sent with the notification.
 
 ## License
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+Action Native Push is licensed under MIT.

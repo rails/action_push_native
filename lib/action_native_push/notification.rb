@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module ActionNativePush
+  # = Action Native Push Notification
+  #
+  # A notification that can be sent to devices.
   class Notification
     include ActiveSupport::Callbacks
 
@@ -10,7 +13,7 @@ module ActionNativePush
     define_callbacks :delivery
     set_callback     :delivery, :before, :before_delivery
 
-    # Attributes
+    # === Attributes
     #
     #   title - The title
     #   body - The message body
