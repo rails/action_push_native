@@ -19,44 +19,31 @@ module ActionNativePush
       private
         attr_reader :config
 
-        class Payload
-          def initialize(notification)
-            @notification = notification
-          end
-
-          def as_json
-            deep_compact({
-              message: {
-                token: notification.token,
-                # FCM requires data values to be strings.
-                data: notification.custom_payload.compact.transform_values(&:to_s),
-                android: {
-                  notification: {
-                    title: notification.title,
-                    body: notification.body,
-                    notification_count: notification.badge,
-                    sound: notification.sound
-                  },
-                  collapse_key: notification.thread_id,
-                  priority: notification.high_priority == true ? "high" : "normal"
-                }
-              }.deep_merge(notification.service_payload[:fcm])
-            })
-          end
-
-          private
-            attr_reader :notification
-
-            def deep_compact(payload)
-              payload.dig(:message, :android, :notification).try(&:compact!)
-              payload.dig(:message, :android).compact!
-              payload[:message].compact!
-              payload
-            end
+        def payload_from(notification)
+          deep_compact({
+            message: {
+              token: notification.token,
+              # FCM requires data values to be strings.
+              data: notification.custom_payload.compact.transform_values(&:to_s),
+              android: {
+                notification: {
+                  title: notification.title,
+                  body: notification.body,
+                  notification_count: notification.badge,
+                  sound: notification.sound
+                },
+                collapse_key: notification.thread_id,
+                priority: notification.high_priority == true ? "high" : "normal"
+              }
+            }.deep_merge(notification.service_payload[:fcm])
+          })
         end
 
-        def payload_from(notification)
-          Payload.new(notification).as_json
+        def deep_compact(payload)
+          payload.dig(:message, :android, :notification).try(&:compact!)
+          payload.dig(:message, :android).compact!
+          payload[:message].compact!
+          payload
         end
 
         def post_request(payload)
