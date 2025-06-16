@@ -25,6 +25,8 @@ Example `config/push.yml`:
 shared:
   job_queue_name: realtime
   report_job_retries: true
+  log_job_arguments: true
+  # enabled: false # Uncomment to disable the notification delivery
   applications:
     ios:
       service: apns
@@ -43,6 +45,20 @@ shared:
       # Firebase project_id
       project_id: your_project_id
 ```
+
+### Engine configuration
+
+The following options are supported:
+
+- `job_queue_name`: The name of the job queue to use for sending notifications. Defaults to the
+    ActiveJob default queue name.
+- `log_job_arguments`: Whether to log job arguments when sending notifications. Defaults to `false`.
+- `report_job_retries`: Whether to report job retries in the logs. Defaults to `false`.
+- `enabled`: Whether the Action Native Push engine should send notifications, by default it is
+    enabled in all non-local environments.
+`applications`: A hash of applications to configure. See the example format in `config/push.yml`.
+
+You can also configure these settings inside the `config/push.yml` file under the root key.
 
 ## Usage
 
