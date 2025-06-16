@@ -70,7 +70,7 @@ notification.deliver_to(device)
 It is recommended to send notifications asynchronously using `deliver_later_to`.
 This ensures error handling and retry logic are in place, and avoids blocking your application's execution.
 
-### Custom service payload
+### Custom service Payload
 
 You can configure a custom service payload to be sent with the notification. This is useful when you
 need to send additional data that is specific to the service you are using (e.g., FCM or APNs).
@@ -105,7 +105,7 @@ You can also specify a `before_delivery` callback to modify or cancel the notifi
   notification.deliver_later_to(device)
 ```
 
-### Linking a device to a record
+### Linking a Device to a Record
 
 A Device can be associated with any record in your application via the `record` polymorphic association:
 
@@ -118,6 +118,14 @@ A Device can be associated with any record in your application via the `record` 
     application: "ios"
     record: user
 ```
+
+### Using a custom Device model
+
+You can use a custom device model, as long as:
+
+1. It can be serialized and deserialized by `ActiveJob`.
+2. It responds to the `token` and `application` methods.
+3. It implements an `on_token_error` callback to handle token errors. By default, device models handle this by destroying the record.
 
 ### `ActionNativePush::Notification` options
 
