@@ -92,15 +92,18 @@ Messaging.
 
 ### `before_delivery` callback
 
-You can also specify a `before_delivery` callback to modify or cancel the notification before it is sent:
+You can also specify a global `before_delivery` callback to modify or cancel the notification before it is sent:
 
 ```ruby
+  ActionNativePush::Notification.before_delivery = do |notification|
+    throw :abort if Calendar.find(notification.custom_payload[:calendar_id]).expired?
+  end
+
   notification = ActionNativePush::Notification.new \
    custom_payload: {
      calendar_id: @calendar.id,
      identity_id: @identity.id
    }
-  notification.before_delivery { |n| throw :abort if Calendar.find(n.custom_payload[:calendar_id]).expired? }
 
   notification.deliver_later_to(device)
 ```

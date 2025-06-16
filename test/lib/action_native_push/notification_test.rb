@@ -65,24 +65,14 @@ module ActionNativePush
     end
 
     test "deliver_to before_delivery callback" do
-      device = action_native_push_devices(:iphone)
-      callback_called = false
-      ActionNativePush::Service::Apns.any_instance.stubs(:push)
-      @notification.before_delivery do |notification|
-        assert_equal @notification, notification
-        callback_called = true
-      end
-
-      @notification.deliver_to(device)
-
-      assert callback_called, "before_deliver callback was not called"
-
+      previous_before_delivery, Notification.before_delivery = Notification.instance_variable_get(:@_before_delivery), proc { throw :abort }
       ActionNativePush::Service::Apns.any_instance.expects(:push).never
-      @notification.before_delivery do |notification|
-        throw :abort
-      end
 
-      @notification.deliver_to(device)
+      perform_enqueued_jobs only: ActionNativePush::NotificationDeliveryJob do
+        @notification.deliver_later_to(action_native_push_devices(:iphone))
+      end
+    ensure
+      Notification.before_delivery = previous_before_delivery
     end
 
     private

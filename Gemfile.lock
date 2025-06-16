@@ -67,6 +67,9 @@ GEM
       rexml
     crass (1.0.6)
     date (3.4.1)
+    debug (1.10.0)
+      irb (~> 1.10)
+      reline (>= 0.3.8)
     drb (2.2.3)
     erb (5.0.1)
     erubi (1.13.1)
@@ -250,6 +253,7 @@ PLATFORMS
 
 DEPENDENCIES
   action_native_push!
+  debug
   mocha
   rubocop
   rubocop-rails-omakase

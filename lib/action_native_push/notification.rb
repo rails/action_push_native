@@ -11,7 +11,17 @@ module ActionNativePush
     attr_accessor :token
 
     define_callbacks :delivery
-    set_callback     :delivery, :before, :before_delivery
+    set_callback     :delivery, :before, -> { self.class.before_delivery(self) }
+
+    class << self
+      def before_delivery(notification)
+        @before_delivery&.call(notification)
+      end
+
+      def before_delivery=(block)
+        @before_delivery = block
+      end
+    end
 
     # === Attributes
     #
@@ -53,10 +63,6 @@ module ActionNativePush
       Array(devices).each do |device|
         NotificationDeliveryJob.perform_later(self.as_json, device)
       end
-    end
-
-    def before_delivery(&block)
-      block ? @before_delivery = block : @before_delivery&.call(self)
     end
 
     def as_json
