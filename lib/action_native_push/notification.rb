@@ -60,7 +60,16 @@ module ActionNativePush
     end
 
     def as_json
-      { title: title, body: body, badge: badge, thread_id: thread_id, sound: sound, high_priority: high_priority, service_payload: service_payload.compact, custom_payload: custom_payload.compact }.compact
+      {
+        title: title,
+        body: body,
+        badge: badge,
+        thread_id: thread_id,
+        sound: sound,
+        high_priority: high_priority,
+        service_payload: service_payload.compact,
+        custom_payload: custom_payload.compact
+      }.compact
     end
 
     private
