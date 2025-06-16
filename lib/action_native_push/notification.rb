@@ -22,7 +22,7 @@ module ActionNativePush
     #   sound - The sound to play when the notification is received
     #   high_priority - Whether to send the notification with high priority (default: true)
     #   service_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
-    #   platform_payload - temporary field used for backward compatibility, will be removed in future versions
+    #   platform_payload - temporary field used for in-flight jobs backward compatibility, will be removed in future versions
     #   custom_payload - A hash of custom data to include in the notification
     def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, platform_payload: {}, custom_payload: {})
       @title = title
