@@ -23,6 +23,8 @@ Example `config/push.yml`:
 
 ```yaml
 shared:
+  job_queue_name: realtime
+  report_job_retries: true
   applications:
     ios:
       service: apns
