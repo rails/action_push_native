@@ -75,7 +75,12 @@ module ActionNativePush
 
         def handle_error(response)
           code = response.code
-          reason = JSON.parse(response.body).dig("error", "message")
+          reason = \
+            begin
+              JSON.parse(response.body).dig("error", "message")
+            rescue JSON::ParserError
+              response.body
+            end
 
           Rails.logger.error("FCM response error #{code}: #{reason}")
 
