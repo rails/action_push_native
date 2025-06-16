@@ -2,15 +2,15 @@
 
 module ActionNativePush
   class NotificationDeliveryJob < ActiveJob::Base
-    queue_as ActionNativePush.configuration.job_queue_name
+    queue_as ActionNativePush.job_queue_name
 
-    self.log_arguments = ActionNativePush.configuration.log_job_arguments
+    self.log_arguments = ActionNativePush.log_job_arguments
 
     discard_on ActiveJob::DeserializationError
 
     class << self
       def retry_options
-        Rails.version >= "8.1" ? { report: ActionNativePush.configuration.report_job_retries } : {}
+        Rails.version >= "8.1" ? { report: ActionNativePush.report_job_retries } : {}
       end
 
       # Exponential backoff starting from a minimum of 1 minute, capped at 60m as suggested by FCM:

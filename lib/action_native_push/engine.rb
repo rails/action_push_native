@@ -18,7 +18,9 @@ module ActionNativePush
       options[:enabled] = config.action_native_push.enabled if config.action_native_push.enabled
       options[:applications] = config.action_native_push.applications if config.action_native_push.applications
 
-      ActionNativePush.configuration = ActionNativePush::Configuration.new(**options)
+      options.each do |name, value|
+        ActionNativePush.public_send("#{name}=", value)
+      end
     end
   end
 end

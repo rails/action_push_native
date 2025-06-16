@@ -4,7 +4,7 @@ module ActionNativePush
   module Service
     class ApnsTest < ActiveSupport::TestCase
       setup do
-        @config = ActionNativePush.configuration.applications[:ios]
+        @config = ActionNativePush.applications[:ios]
         @apns = Apns.new(@config)
         @notification = build_notification
       end

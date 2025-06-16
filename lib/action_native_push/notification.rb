@@ -36,7 +36,7 @@ module ActionNativePush
     end
 
     def deliver_to(device)
-      return unless ActionNativePush.configuration.enabled
+      return unless ActionNativePush.enabled
 
       self.token = device.token
       begin
@@ -74,7 +74,7 @@ module ActionNativePush
 
     private
       def service_for(device)
-        service_config = ActionNativePush.configuration.applications[device.application.to_sym]
+        service_config = ActionNativePush.applications[device.application.to_sym]
         raise "ActionNativePush: Application #{device.application} is not configured" unless service_config
         service_class = "ActionNativePush::Service::#{service_config[:service].capitalize}".constantize
         service_class.new(service_config)

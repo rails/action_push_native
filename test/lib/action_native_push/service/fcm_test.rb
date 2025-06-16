@@ -4,7 +4,7 @@ module ActionNativePush
   module Service
     class FcmTest < ActiveSupport::TestCase
       setup do
-        @fcm = Fcm.new(ActionNativePush.configuration.applications[:android])
+        @fcm = Fcm.new(ActionNativePush.applications[:android])
         @notification = build_notification
         stub_authorizer
       end

@@ -26,7 +26,7 @@ module ActionNativePush
 
       apns = stub(:apns)
       apns.expects(:push).with(@notification)
-      ActionNativePush::Service::Apns.expects(:new).with(ActionNativePush.configuration.applications[:ios]).returns(apns)
+      ActionNativePush::Service::Apns.expects(:new).with(ActionNativePush.applications[:ios]).returns(apns)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)
@@ -38,7 +38,7 @@ module ActionNativePush
 
       fcm = stub(:fcm)
       fcm.expects(:push).with(@notification)
-      ActionNativePush::Service::Fcm.expects(:new).with(ActionNativePush.configuration.applications[:android]).returns(fcm)
+      ActionNativePush::Service::Fcm.expects(:new).with(ActionNativePush.applications[:android]).returns(fcm)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)
@@ -55,13 +55,13 @@ module ActionNativePush
     end
 
     test "deliver_to is a noop when disabled" do
-      previously_enabled, ActionNativePush.configuration.enabled = ActionNativePush.configuration.enabled, false
+      previously_enabled, ActionNativePush.enabled = ActionNativePush.enabled, false
 
       device = action_native_push_devices(:iphone)
       ActionNativePush::Service::Apns.any_instance.expects(:push).never
       @notification.deliver_to(device)
 
-      ActionNativePush.configuration.enabled = previously_enabled
+      ActionNativePush.enabled = previously_enabled
     end
 
     test "deliver_to before_delivery callback" do
