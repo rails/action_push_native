@@ -1,0 +1,50 @@
+shared:
+  # Use a different queue name than the default
+  # job_queue_name: realtime
+
+  # Useful to monitor initial rollouts.
+  # report_job_retries: true
+
+  applications:
+    # Currently supported services are: apns and fcm.
+    ios:
+      service: apns
+
+      # Token auth params
+      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+      key_id: your_key_id
+      encryption_key: your_apple_encryption_key
+
+      team_id: your_apple_team_id
+      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
+      topic: your.bundle.identifier
+
+      # Set this to the number of threads used to process notifications (Default: 5).
+      # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
+      # connection_pool_size: 5
+      # request_timeout: 30
+
+      # Decide when to connect to APNs development server.
+      # Please note that anything built directly from Xcode and loaded on your phone will have
+      # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
+      # will be considered as PRODUCTION environment.
+      # connect_to_development_server: <%# Rails.env.development? %>
+    android:
+      service: fcm
+
+      # Your Firebase project service account credentials
+      # See https://firebase.google.com/docs/cloud-messaging/auth-server
+      encryption_key: your_service_account_json_file
+
+      # Firebase project_id
+      project_id: your_project_id
+
+      # request_timeout: 15
+
+development:
+  # Job arguments aren't logged by default, since they can contain sensitive data.
+  log_job_arguments: true
+
+test:
+  # Force sending notifications in tests:
+  enabled: true

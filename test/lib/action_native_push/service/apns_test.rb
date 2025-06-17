@@ -1,0 +1,118 @@
+require "test_helper"
+
+module ActionNativePush
+  module Service
+    class ApnsTest < ActiveSupport::TestCase
+      setup do
+        @config = ActionNativePush.applications[:ios]
+        @apns = Apns.new(@config)
+        @notification = build_notification
+      end
+      teardown { Apns.connection_pools = {} }
+
+      test "push" do
+        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
+        Apns.connection_pools = { @config => connection_pool }
+
+        @apns.push(@notification)
+
+        assert_equal 1, connection_pool.deliveries.size
+
+        options = connection_pool.deliveries.first[:options]
+        assert_equal 30, options[:timeout]
+
+        delivery =  connection_pool.deliveries.first[:notification]
+        assert_equal "123", delivery.token
+        assert_equal "Hi!", delivery.alert[:title]
+        assert_equal "This is a push notification", delivery.alert[:body]
+        assert_equal 1, delivery.badge
+        assert_equal "12345", delivery.thread_id
+        assert_equal "default", delivery.sound
+        assert_equal "readable", delivery.category
+        assert_equal 5, delivery.priority
+        assert_equal "Jacopo", delivery.custom_payload[:person]
+      end
+
+      test "push response error" do
+        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400"))
+        Apns.connection_pools = { @config => connection_pool }
+
+        assert_raises ActionNativePush::Errors::BadRequestError do
+          @apns.push(@notification)
+        end
+
+        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400", body: { reason: "BadDeviceToken" }))
+        Apns.connection_pools = { @config => connection_pool }
+
+        assert_raises ActionNativePush::Errors::DeviceTokenError do
+          @apns.push(@notification)
+        end
+      end
+
+      test "push apns payload can be overridden" do
+        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
+        Apns.connection_pools = { @config => connection_pool }
+        @notification.service_payload[:apns] = { priority: 10, "thread-id": "changed" }
+
+        @apns.push(@notification)
+
+        delivery =  connection_pool.deliveries.first[:notification]
+        assert_equal 10, delivery.priority
+        assert_equal "changed", delivery.thread_id
+      end
+
+      private
+        class FakeConnectionPool
+          attr_reader :deliveries
+
+          def initialize(response)
+            @response = response
+            @deliveries = []
+          end
+
+          def with
+            yield self
+          end
+
+          def push(notification, options = {})
+            deliveries.push(notification:, options:)
+            response
+          end
+
+          private
+            attr_reader :response
+        end
+
+        class FakeResponse
+          attr_reader :status, :body
+
+          def initialize(status:, body: {})
+            @status = status
+            @body = body.stringify_keys
+          end
+
+          def ok?
+            status.start_with?("20")
+          end
+        end
+
+        def build_notification
+          ActionNativePush::Notification.new(
+            title: "Hi!",
+            body: "This is a push notification",
+            badge: 1,
+            thread_id: "12345",
+            sound: "default",
+            high_priority: false,
+            service_payload: {
+              apns: { category: "readable" },
+              fcm: { android: { collapse_key: "321" } }
+            },
+            custom_payload: { person: "Jacopo" }
+          ).tap do |notification|
+            notification.token = "123"
+          end
+        end
+    end
+  end
+end
