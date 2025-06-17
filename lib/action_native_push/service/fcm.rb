@@ -41,7 +41,7 @@ module ActionNativePush
 
         def deep_compact(payload)
           payload.dig(:message, :android, :notification).try(&:compact!)
-          payload.dig(:message, :android).compact!
+          payload.dig(:message, :android).try(&:compact!)
           payload[:message].compact!
           payload
         end
