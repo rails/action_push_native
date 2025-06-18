@@ -158,7 +158,7 @@ You can use a custom device model, as long as:
 | :badge           | The badge number to display on the app icon
 | :thread_id       | The thread identifier for grouping notifications.
 | :sound           | The sound to play when the notification is received.
-| :high_priority   | Whether the notification should be sent with high priority (default: true).
+| :high_priority   | Whether the notification should be sent with high priority (default: true). For silent notifications is recommended to set this to `false`.
 | :service_payload | The service-specific payload for the notification. Valid subkeys are `apns` for Apple Push Notification Service and `fcm` for Firebase Cloud Messaging.
 | :custom_payload  | Custom payload data to be sent with the notification.
 

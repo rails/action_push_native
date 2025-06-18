@@ -31,7 +31,8 @@ module ActionNativePush
     #   badge - The badge number to display on the app icon
     #   thread_id - The thread ID for grouping notifications
     #   sound - The sound to play when the notification is received
-    #   high_priority - Whether to send the notification with high priority (default: true)
+    #   high_priority - Whether to send the notification with high priority (default: true).
+    #                   For silent notifications is recommended to set this to false.
     #   service_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
     #   platform_payload - temporary field used for in-flight jobs backward compatibility, will be removed in future versions
     #   custom_payload - A hash of custom data to include in the notification
