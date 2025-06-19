@@ -100,6 +100,8 @@ module ActionNativePush
             raise ActionNativePush::Errors::TimeoutError
           in [ "400", "BadDeviceToken" ]
             raise ActionNativePush::Errors::DeviceTokenError, reason
+          in [ "400", "DeviceTokenNotForTopic" ]
+            raise ActionNativePush::Errors::BadDeviceTopicError, reason
           in [ "400", _ ]
             raise ActionNativePush::Errors::BadRequestError, reason
           in [ "403", _ ]

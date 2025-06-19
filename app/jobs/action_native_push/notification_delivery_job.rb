@@ -7,6 +7,9 @@ module ActionNativePush
     self.log_arguments = ActionNativePush.log_job_arguments
 
     discard_on ActiveJob::DeserializationError
+    discard_on Errors::BadDeviceTopicError do |_job, error|
+      Rails.error.report(error)
+    end
 
     class << self
       def retry_options
