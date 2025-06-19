@@ -36,20 +36,20 @@ module ActionNativePush
     end
 
     with_options retry_options do
-      retry_on ActionNativePush::Errors::TimeoutError, wait: 1.minute
-      retry_on ActionNativePush::Errors::ConnectionError, ConnectionPool::TimeoutError, attempts: 20
+      retry_on Errors::TimeoutError, wait: 1.minute
+      retry_on Errors::ConnectionError, ConnectionPool::TimeoutError, attempts: 20
 
       # Altough unexpected, these are short-lived errors that can be retried most of the times.
-      retry_on ActionNativePush::Errors::ForbiddenError, ActionNativePush::Errors::BadRequestError
+      retry_on Errors::ForbiddenError, Errors::BadRequestError
 
       with_options wait: ->(executions) { exponential_backoff_delay(executions) }, attempts: 6 do
-        retry_on ActionNativePush::Errors::TooManyRequestsError, ActionNativePush::Errors::ServiceUnavailableError, ActionNativePush::Errors::InternalServerError
+        retry_on Errors::TooManyRequestsError, Errors::ServiceUnavailableError, Errors::InternalServerError
         retry_on Signet::RemoteServerError
       end
     end
 
     def perform(notification_attributes, device)
-      ActionNativePush::Notification.new(**notification_attributes).deliver_to(device)
+      Notification.new(**notification_attributes).deliver_to(device)
     end
   end
 end
