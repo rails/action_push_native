@@ -53,3 +53,6 @@ module ActionNativePush
     end
   end
 end
+# backward compat for in-flight jobs
+ActionNativePush::Jobs = Module.new
+ActionNativePush::Jobs::NotificationDeliveryJob = ActionNativePush::NotificationDeliveryJob
