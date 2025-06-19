@@ -57,8 +57,8 @@ module ActionNativePush
         run_callbacks :delivery do
           service_for(device).push(self)
         end
-      rescue Errors::TokenError
-        Rails.logger.info("Device##{device.id} token is invalid")
+      rescue Errors::TokenError => e
+        Rails.logger.info("Device##{device.id} token is invalid: #{e.message}")
         device.on_token_error
       end
     end
