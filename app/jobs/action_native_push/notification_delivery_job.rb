@@ -44,11 +44,11 @@ module ActionNativePush
 
       # Altough unexpected, these are short-lived errors that can be retried most of the times.
       retry_on Errors::ForbiddenError, Errors::BadRequestError
+    end
 
-      with_options wait: ->(executions) { exponential_backoff_delay(executions) }, attempts: 6 do
-        retry_on Errors::TooManyRequestsError, Errors::ServiceUnavailableError, Errors::InternalServerError
-        retry_on Signet::RemoteServerError
-      end
+    with_options wait: ->(executions) { exponential_backoff_delay(executions) }, attempts: 6, **retry_options do
+      retry_on Errors::TooManyRequestsError, Errors::ServiceUnavailableError, Errors::InternalServerError
+      retry_on Signet::RemoteServerError
     end
 
     def perform(notification_attributes, device)
