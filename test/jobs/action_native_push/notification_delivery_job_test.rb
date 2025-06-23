@@ -20,6 +20,17 @@ module ActionNativePush
       perform_enqueued_jobs only: ActionNativePush::NotificationDeliveryJob
     end
 
+    test "BadDeviceTopic errors are discarded" do
+      device = action_native_push_devices(:iphone)
+      Notification.any_instance.stubs(:deliver_to).raises(Errors::BadDeviceTopicError)
+
+      assert_enqueued_jobs 1, only: ActionNativePush::NotificationDeliveryJob do
+        ActionNativePush::NotificationDeliveryJob.perform_later({}, device)
+      end
+      perform_enqueued_jobs only: ActionNativePush::NotificationDeliveryJob
+      assert_enqueued_jobs 0, only: ActionNativePush::NotificationDeliveryJob
+    end
+
     private
       def assert_wait(seconds)
         job = enqueued_jobs_with(only: ActionNativePush::NotificationDeliveryJob).last
