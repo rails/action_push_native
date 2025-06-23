@@ -147,7 +147,7 @@ You can use a custom device model, as long as:
 
 1. It can be serialized and deserialized by `ActiveJob`.
 2. It responds to the `token` and `application` methods.
-3. It implements an `on_token_error` callback to handle token errors. By default, device models handle this by destroying the record.
+3. It implements an `on_token_error` callback to handle token errors. By default, device models handle this [by destroying the record](https://github.com/basecamp/action_native_push/blob/main/app/models/action_native_push/device.rb#L10-L12).
 
 ### `ActionNativePush::Notification` options
 
