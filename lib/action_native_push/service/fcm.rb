@@ -53,17 +53,19 @@ module ActionNativePush
           request["Content-Type"]  = "application/json"
           request.body             = payload.to_json
 
-          rescue_and_reraise_timeout_errors do
+          rescue_and_reraise_network_errors do
             Net::HTTP.start(uri.host, uri.port, use_ssl: true, read_timeout: config[:request_timeout] || DEFAULT_TIMEOUT) do |http|
               http.request(request)
             end
           end
         end
 
-        def rescue_and_reraise_timeout_errors
+        def rescue_and_reraise_network_errors
           yield
         rescue Net::ReadTimeout, Net::OpenTimeout => e
           raise ActionNativePush::Errors::TimeoutError, e.message
+        rescue SocketError => e
+          raise ActionNativePush::Errors::ConnectionError, e.message
         end
 
         def access_token
