@@ -46,7 +46,7 @@ module ActionNativePush
       end
     end
 
-    test "deliver_to calls device callback token error" do
+    test "deliver_to calls device.on_token_error callback on token error" do
       device = action_native_push_devices(:iphone)
 
       device.expects(:on_token_error).once
@@ -61,7 +61,7 @@ module ActionNativePush
       device = action_native_push_devices(:iphone)
       ActionNativePush::Service::Apns.any_instance.expects(:push).never
       @notification.deliver_to(device)
-
+    ensure
       ActionNativePush.enabled = previously_enabled
     end
 
