@@ -18,6 +18,7 @@ module ActionNativePush
       Notification.any_instance.stubs(:deliver_to)
       ActionNativePush::NotificationDeliveryJob.perform_now({}, device)
       perform_enqueued_jobs only: ActionNativePush::NotificationDeliveryJob
+      assert_enqueued_jobs 0, only: ActionNativePush::NotificationDeliveryJob
     end
 
     test "BadDeviceTopic errors are discarded" do
