@@ -22,7 +22,7 @@ shared:
       # Set this to the number of threads used to process notifications (Default: 5).
       # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
       # connection_pool_size: 5
-      # request_timeout: 30
+      request_timeout: 60
 
       # Decide when to connect to APNs development server.
       # Please note that anything built directly from Xcode and loaded on your phone will have

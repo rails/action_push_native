@@ -19,7 +19,7 @@ module ActionNativePush
         assert_equal 1, connection_pool.deliveries.size
 
         options = connection_pool.deliveries.first[:options]
-        assert_equal 30, options[:timeout]
+        assert_equal 60, options[:timeout]
 
         delivery =  connection_pool.deliveries.first[:notification]
         assert_equal "123", delivery.token
