@@ -56,7 +56,7 @@ The following options are supported:
 - `report_job_retries`: Whether to report job retries in the logs. Defaults to `false`.
 - `enabled`: Whether the Action Native Push engine should send notifications, by default it is
     enabled in all non-local environments.
-`applications`: A hash of applications to configure. See the example format in `config/push.yml`.
+- `applications`: A hash of applications to configure. See the example format in `config/push.yml`.
 
 You can also configure these settings inside the `config/push.yml` file under the root key.
 
@@ -108,7 +108,7 @@ Messaging.
 
 ### `before_delivery` callback
 
-You can also specify a global `before_delivery` callback to modify or cancel the notification before it is sent:
+You can specify a global `before_delivery` callback to modify or cancel the notification before it is sent:
 
 ```ruby
   ActionNativePush::Notification.before_delivery = do |notification|
@@ -161,6 +161,7 @@ You can use a custom device model, as long as:
 | :high_priority   | Whether the notification should be sent with high priority (default: true). For silent notifications is recommended to set this to `false` to avoid [deprioritization or notification delegation](https://firebase.google.com/docs/cloud-messaging/android/message-priority#deprioritize).
 | :service_payload | The service-specific payload for the notification. Valid subkeys are `apns` for Apple Push Notification Service and `fcm` for Firebase Cloud Messaging.
 | :custom_payload  | Custom payload data to be sent with the notification.
+| :context  | Hash of additional context data that won't be sent to the device, but can be used in callbacks |
 
 ## License
 
