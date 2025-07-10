@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require "bundler/inline"
+gemfile do
+  gem "rails", github: "rails/rails", branch: "main"
+end
+
+require "active_support/continuous_integration"
+
+ActiveSupport::ContinuousIntegration.run do
+  step "Test",  "bin/rails test"
+  step "Style", "bin/rubocop"
+end
