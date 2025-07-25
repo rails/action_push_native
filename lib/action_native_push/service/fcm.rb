@@ -66,6 +66,12 @@ module ActionNativePush
           raise ActionNativePush::Errors::TimeoutError, e.message
         rescue SocketError => e
           raise ActionNativePush::Errors::ConnectionError, e.message
+        rescue OpenSSL::SSL::SSLError => e
+          if e.message.include?("SSL_connect")
+            raise ActionNativePush::Errors::ConnectionError, e.message
+          else
+            raise
+          end
         end
 
         def access_token
