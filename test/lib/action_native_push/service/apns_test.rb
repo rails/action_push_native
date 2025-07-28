@@ -22,6 +22,7 @@ module ActionNativePush
         assert_equal 60, options[:timeout]
 
         delivery =  connection_pool.deliveries.first[:notification]
+        assert_equal "your.bundle.identifier", delivery.topic
         assert_equal "123", delivery.token
         assert_equal "Hi!", delivery.alert[:title]
         assert_equal "This is a push notification", delivery.alert[:body]
@@ -51,13 +52,14 @@ module ActionNativePush
 
       test "push apns payload can be overridden" do
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
+        high_priority = 10
         Apns.connection_pools = { @config => connection_pool }
-        @notification.service_payload[:apns] = { priority: 10, "thread-id": "changed" }
+        @notification.service_payload[:apns] = { priority: high_priority, "thread-id": "changed" }
 
         @apns.push(@notification)
 
         delivery =  connection_pool.deliveries.first[:notification]
-        assert_equal 10, delivery.priority
+        assert_equal high_priority, delivery.priority
         assert_equal "changed", delivery.thread_id
       end
 
