@@ -93,7 +93,7 @@ module ActionNativePush
           code = response&.status
           reason = response.body["reason"] if response
 
-          Rails.logger.error("APNs response error #{code}: #{reason}")
+          Rails.logger.error("APNs response error #{code}: #{reason}") if reason
 
           case [ code, reason ]
           in [ nil, _ ]
