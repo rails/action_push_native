@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+VERSION=$1
+
+printf "module ActionNativePush\n  VERSION = \"$VERSION\"\nend\n" > ./lib/action_native_push/version.rb
+bundle
+git add Gemfile.lock lib/action_native_push/version.rb
+git commit -m "Bump version for $VERSION"
+git push
+git tag v$VERSION
+git push --tags
+gem build action_native_push
+gem push "action_native_push-$VERSION.gem" --host https://rubygems.org
+rm "action_native_push-$VERSION.gem"
