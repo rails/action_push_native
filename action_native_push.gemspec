@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = [ "Jacopo Beschi" ]
   spec.email = [ "jacopo@37signals.com" ]
 
-  spec.summary = "Send push notifications for mobile apps"
-  spec.description = "Send push notifications for mobile apps"
+  spec.summary = "Send push notifications to mobile apps"
+  spec.description = "Send push notifications to mobile apps"
   spec.homepage = "https://github.com/basecamp/action_native_push"
   spec.license = "MIT"
 
@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.metadata["source_code_uri"] = spec.homepage
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
+    Dir["{app,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
   spec.required_ruby_version = '>= 3.2.0'
