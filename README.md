@@ -174,7 +174,7 @@ You can use a custom device model, as long as:
 
 ### `ActionNativePush::Notification` attributes
 
-| Attribute           | Description
+| Name           | Description
 |------------------|------------
 | :title           | The title of the notification.
 | :body            | The body of the notification.
