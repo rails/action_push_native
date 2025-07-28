@@ -15,7 +15,7 @@ This will install the gem and run the necessary migrations to set up the databas
 ## Configuration
 
 The installation will create a `config/push.yml` file with a default configuration for iOS
-and Android applications. To send notifications, you need to set up credentials for each configured application.
+and Android applications. To send push notifications, you need to set up credentials for each configured application.
 You can add as many applications as you like, as long as each one is configured
 with a supported notification service (FCM or APNs).
 
@@ -37,6 +37,17 @@ shared:
       team_id: your_apple_team_id
       # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
       topic: your.bundle.identifier
+
+      # Set this to the number of threads used to process notifications (Default: 5).
+      # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
+      connection_pool_size: 10
+      request_timeout: 60
+
+      # Decide when to connect to APNs development server.
+      # Please note that anything built directly from Xcode and loaded on your phone will have
+      # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
+      # will be considered as PRODUCTION environment.
+      connect_to_development_server: <%= Rails.env.development? %>
     android:
       service: fcm
       # Your Firebase project service account credentials
@@ -44,9 +55,9 @@ shared:
       encryption_key: your_service_account_json_file
       # Firebase project_id
       project_id: your_project_id
-```
 
-### Engine configuration
+      request_timeout: 30
+```
 
 The following options are supported:
 
@@ -58,9 +69,15 @@ The following options are supported:
     enabled in all non-local environments.
 - `applications`: A hash of applications to configure. See the example format in `config/push.yml`.
 
-You can also configure these settings inside the `config/push.yml` file under the root key.
+You can configure these settings either in the `config/push.yml` file or in your per-environment
+configuration files (e.g., `config/environments/production.rb`):
+
+```ruby
+config.action_native_push.job_queue_name = "realtime"
+```
 
 ## Usage
+
 
 ### Create and send a notification asynchronously to a device
 
@@ -75,6 +92,12 @@ notification = ActionNativePush::Notification.new \
   body:  "Welcome to Action Native Push",
 
 notification.deliver_later_to(device)
+```
+
+`deliver_later_to` supports also an array of devices:
+
+```ruby
+notification.deliver_later_to([ device1, device2 ])
 ```
 
 A notification can also be delivered synchronously using `deliver_to`:
