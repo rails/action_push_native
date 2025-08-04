@@ -37,7 +37,3 @@ shared:
       project_id: your_project_id
 
       # request_timeout: 15
-
-development:
-  # Job arguments aren't logged by default, since they can contain sensitive data.
-  log_job_arguments: true

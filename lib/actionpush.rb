@@ -12,8 +12,6 @@ loader.ignore("#{__dir__}/generators")
 loader.setup
 
 module ActionPush
-  mattr_accessor :log_job_arguments, default: false
-  mattr_accessor :report_job_retries, default: false
   mattr_accessor :applications, default: {}
 
   def self.supported_applications

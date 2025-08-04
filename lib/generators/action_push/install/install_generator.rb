@@ -6,6 +6,7 @@ class ActionPush::InstallGenerator < Rails::Generators::Base
   def copy_files
     template "config/push.yml"
     template "app/models/application_push_notification.rb"
+    template "app/jobs/application_push_notification_job.rb"
   end
 
   def copy_migrations

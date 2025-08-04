@@ -18,7 +18,8 @@ The installation will create:
 
 - `config/push.yml` file with a default configuration for Apple
 and Android.
-- `app/models/action_push_notification.rb` model to send push notifications.
+- `app/models/application_push_notification.rb` application model to send push notifications.
+- `app/jobs/application_push_notification_job.rb` application job to process the notifications.
 
 Example `config/push.yml`:
 
@@ -68,7 +69,7 @@ The following options are supported:
 - `report_job_retries`: Whether to report job retries in the logs. Defaults to `false`.
 - `applications`: A hash of applications to configure. See the example format in `config/push.yml`.
 
-Example `app/models/action_push_notification.rb`:
+Example `app/models/application_push_notification.rb`:
 
 ```ruby
 class ApplicationPushNotification < ActionPush::Notification
@@ -82,6 +83,18 @@ class ApplicationPushNotification < ActionPush::Notification
   # before_delivery do |notification|
   #   throw :abort if Notification.find(notification.context[:notification_id]).expired?
   # end
+end
+```
+
+Example `app/jobs/application_push_notification_job.rb`:
+
+```ruby
+class ApplicationPushNotificationJob < ActionPush::NotificationJob
+  # Enable logging job arguments (`false` by default)
+  # self.log_arguments = true
+
+  # Report job retries via the `Rails.error` reporter
+  self.report_job_retries = true
 end
 ```
 

@@ -61,7 +61,7 @@ module ActionPush
 
     def deliver_later_to(devices)
       Array(devices).each do |device|
-        NotificationDeliveryJob.set(queue: queue_name).perform_later(self.class.name, self.as_json, device)
+        ApplicationPushNotificationJob.set(queue: queue_name).perform_later(self.class.name, self.as_json, device)
       end
     end
 

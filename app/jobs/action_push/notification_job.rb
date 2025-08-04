@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module ActionPush
-  class NotificationDeliveryJob < ActiveJob::Base
-    self.log_arguments = ActionPush.log_job_arguments
+  class NotificationJob < ActiveJob::Base
+    self.log_arguments = false
+
+    class_attribute :report_job_retries, default: false
 
     discard_on ActiveJob::DeserializationError
     discard_on Errors::BadDeviceTopicError do |_job, error|
@@ -11,7 +13,7 @@ module ActionPush
 
     class << self
       def retry_options
-        Rails.version >= "8.1" ? { report: ActionPush.report_job_retries } : {}
+        Rails.version >= "8.1" ? { report: report_job_retries } : {}
       end
 
       # Exponential backoff starting from a minimum of 1 minute, capped at 60m as suggested by FCM:
