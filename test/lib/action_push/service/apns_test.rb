@@ -1,10 +1,10 @@
 require "test_helper"
 
-module ActionNativePush
+module ActionPush
   module Service
     class ApnsTest < ActiveSupport::TestCase
       setup do
-        @config = ActionNativePush.applications[:ios]
+        @config = ActionPush.applications[:ios]
         @apns = Apns.new(@config)
         @notification = build_notification
       end
@@ -38,14 +38,14 @@ module ActionNativePush
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400"))
         Apns.connection_pools = { @config => connection_pool }
 
-        assert_raises ActionNativePush::Errors::BadRequestError do
+        assert_raises ActionPush::Errors::BadRequestError do
           @apns.push(@notification)
         end
 
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400", body: { reason: "BadDeviceToken" }))
         Apns.connection_pools = { @config => connection_pool }
 
-        assert_raises ActionNativePush::Errors::DeviceTokenError do
+        assert_raises ActionPush::Errors::DeviceTokenError do
           @apns.push(@notification)
         end
       end
@@ -99,7 +99,7 @@ module ActionNativePush
         end
 
         def build_notification
-          ActionNativePush::Notification.new(
+          ActionPush::Notification.new(
             title: "Hi!",
             body: "This is a push notification",
             badge: 1,

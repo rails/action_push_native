@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require_relative "lib/action_native_push/version"
+require_relative "lib/action_push/version"
 
 Gem::Specification.new do |spec|
-  spec.name        = "action_native_push"
-  spec.version     = ActionNativePush::VERSION
+  spec.name        = "actionpush"
+  spec.version     = ActionPush::VERSION
   spec.authors = [ "Jacopo Beschi" ]
   spec.email = [ "jacopo@37signals.com" ]
 
   spec.summary = "Send push notifications to mobile apps"
   spec.description = "Send push notifications to mobile apps"
-  spec.homepage = "https://github.com/basecamp/action_native_push"
+  spec.homepage = "https://github.com/basecamp/actionpush"
   spec.license = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage

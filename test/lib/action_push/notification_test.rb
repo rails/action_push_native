@@ -1,6 +1,6 @@
 require "test_helper"
 
-module ActionNativePush
+module ActionPush
   class NotificationTest < ActiveSupport::TestCase
     setup { @notification = build_notification }
 
@@ -17,17 +17,17 @@ module ActionNativePush
     end
 
     test "deliver_later_to" do
-      @notification.deliver_later_to([ action_native_push_devices(:iphone), action_native_push_devices(:pixel9) ])
-      assert_enqueued_with job: ActionNativePush::NotificationDeliveryJob, args: [ @notification.as_json, action_native_push_devices(:pixel9) ]
-      assert_enqueued_with job: ActionNativePush::NotificationDeliveryJob, args: [ @notification.as_json, action_native_push_devices(:iphone) ]
+      @notification.deliver_later_to([ action_push_devices(:iphone), action_push_devices(:pixel9) ])
+      assert_enqueued_with job: ActionPush::NotificationDeliveryJob, args: [ @notification.as_json, action_push_devices(:pixel9) ]
+      assert_enqueued_with job: ActionPush::NotificationDeliveryJob, args: [ @notification.as_json, action_push_devices(:iphone) ]
     end
 
     test "deliver_to APNs" do
-      device = action_native_push_devices(:iphone)
+      device = action_push_devices(:iphone)
 
       apns = stub(:apns)
       apns.expects(:push).with(@notification)
-      ActionNativePush::Service::Apns.expects(:new).with(ActionNativePush.applications[:ios]).returns(apns)
+      ActionPush::Service::Apns.expects(:new).with(ActionPush.applications[:ios]).returns(apns)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)
@@ -35,11 +35,11 @@ module ActionNativePush
     end
 
     test "deliver_to FCM" do
-      device = action_native_push_devices(:pixel9)
+      device = action_push_devices(:pixel9)
 
       fcm = stub(:fcm)
       fcm.expects(:push).with(@notification)
-      ActionNativePush::Service::Fcm.expects(:new).with(ActionNativePush.applications[:android]).returns(fcm)
+      ActionPush::Service::Fcm.expects(:new).with(ActionPush.applications[:android]).returns(fcm)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)
@@ -47,31 +47,31 @@ module ActionNativePush
     end
 
     test "deliver_to calls device.on_token_error callback on token error" do
-      device = action_native_push_devices(:iphone)
+      device = action_push_devices(:iphone)
 
       device.expects(:on_token_error).once
-      ActionNativePush::Service::Apns.any_instance.expects(:push).raises(ActionNativePush::Errors::TokenError)
+      ActionPush::Service::Apns.any_instance.expects(:push).raises(ActionPush::Errors::TokenError)
 
       @notification.deliver_to(device)
     end
 
     test "deliver_to is a noop when disabled" do
-      previously_enabled, ActionNativePush.enabled = ActionNativePush.enabled, false
+      previously_enabled, ActionPush.enabled = ActionPush.enabled, false
 
-      device = action_native_push_devices(:iphone)
-      ActionNativePush::Service::Apns.any_instance.expects(:push).never
+      device = action_push_devices(:iphone)
+      ActionPush::Service::Apns.any_instance.expects(:push).never
       @notification.deliver_to(device)
     ensure
-      ActionNativePush.enabled = previously_enabled
+      ActionPush.enabled = previously_enabled
     end
 
     test "deliver_to before_delivery callback" do
       callback_called = false
       previous_before_delivery, Notification.before_delivery = Notification.instance_variable_get(:@_before_delivery), proc { callback_called = true }
-      ActionNativePush::Service::Apns.any_instance.stubs(:push)
+      ActionPush::Service::Apns.any_instance.stubs(:push)
 
-      perform_enqueued_jobs only: ActionNativePush::NotificationDeliveryJob do
-        @notification.deliver_later_to(action_native_push_devices(:iphone))
+      perform_enqueued_jobs only: ActionPush::NotificationDeliveryJob do
+        @notification.deliver_later_to(action_push_devices(:iphone))
       end
       assert callback_called, "Expected before_delivery callback to be called"
     ensure
@@ -80,7 +80,7 @@ module ActionNativePush
 
     private
       def build_notification
-        ActionNativePush::Notification.new \
+        ActionPush::Notification.new \
           title: "Hi!",
           body: "This is a push notification",
           badge: 1,

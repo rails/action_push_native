@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ActionNativePush
+module ActionPush
   module Service
     class Apns
       DEFAULT_TIMEOUT   = 30.seconds
@@ -60,12 +60,12 @@ module ActionNativePush
           begin
             yield
           rescue Errno::ETIMEDOUT => e
-            raise ActionNativePush::Errors::TimeoutError, e.message
+            raise ActionPush::Errors::TimeoutError, e.message
           rescue Errno::ECONNRESET, Errno::ECONNREFUSED, SocketError => e
-            raise ActionNativePush::Errors::ConnectionError, e.message
+            raise ActionPush::Errors::ConnectionError, e.message
           rescue OpenSSL::SSL::SSLError => e
             if e.message.include?("SSL_connect")
-              raise ActionNativePush::Errors::ConnectionError, e.message
+              raise ActionPush::Errors::ConnectionError, e.message
             else
               raise
             end
@@ -97,27 +97,27 @@ module ActionNativePush
 
           case [ code, reason ]
           in [ nil, _ ]
-            raise ActionNativePush::Errors::TimeoutError
+            raise ActionPush::Errors::TimeoutError
           in [ "400", "BadDeviceToken" ]
-            raise ActionNativePush::Errors::DeviceTokenError, reason
+            raise ActionPush::Errors::DeviceTokenError, reason
           in [ "400", "DeviceTokenNotForTopic" ]
-            raise ActionNativePush::Errors::BadDeviceTopicError, reason
+            raise ActionPush::Errors::BadDeviceTopicError, reason
           in [ "400", _ ]
-            raise ActionNativePush::Errors::BadRequestError, reason
+            raise ActionPush::Errors::BadRequestError, reason
           in [ "403", _ ]
-            raise ActionNativePush::Errors::ForbiddenError, reason
+            raise ActionPush::Errors::ForbiddenError, reason
           in [ "404", _ ]
-            raise ActionNativePush::Errors::NotFoundError, reason
+            raise ActionPush::Errors::NotFoundError, reason
           in [ "410", _ ]
-            raise ActionNativePush::Errors::ExpiredTokenError, reason
+            raise ActionPush::Errors::ExpiredTokenError, reason
           in [ "413", _ ]
-            raise ActionNativePush::Errors::PayloadTooLargeError, reason
+            raise ActionPush::Errors::PayloadTooLargeError, reason
           in [ "429", _ ]
-            raise ActionNativePush::Errors::TooManyRequestsError, reason
+            raise ActionPush::Errors::TooManyRequestsError, reason
           in [ "503", _ ]
-            raise ActionNativePush::Errors::ServiceUnavailableError, reason
+            raise ActionPush::Errors::ServiceUnavailableError, reason
           else
-            raise ActionNativePush::Errors::InternalServerError, reason
+            raise ActionPush::Errors::InternalServerError, reason
           end
         end
     end

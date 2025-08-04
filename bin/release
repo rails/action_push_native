@@ -2,13 +2,13 @@
 
 VERSION=$1
 
-printf "module ActionNativePush\n  VERSION = \"$VERSION\"\nend\n" > ./lib/action_native_push/version.rb
+printf "module ActionPush\n  VERSION = \"$VERSION\"\nend\n" > ./lib/actionpush/version.rb
 bundle
-git add Gemfile.lock lib/action_native_push/version.rb
+git add Gemfile.lock lib/actionpush/version.rb
 git commit -m "Bump version for $VERSION"
 git push
 git tag v$VERSION
 git push --tags
-gem build action_native_push
-gem push "action_native_push-$VERSION.gem" --host https://rubygems.org
-rm "action_native_push-$VERSION.gem"
+gem build actionpush
+gem push "actionpush-$VERSION.gem" --host https://rubygems.org
+rm "actionpush-$VERSION.gem"

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ActionNativePush
+module ActionPush
   module Service
     class Fcm
       # FCM suggests at least a 10s timeout for requests, we set 15 to add some buffer.
@@ -63,12 +63,12 @@ module ActionNativePush
         def rescue_and_reraise_network_errors
           yield
         rescue Net::ReadTimeout, Net::OpenTimeout => e
-          raise ActionNativePush::Errors::TimeoutError, e.message
+          raise ActionPush::Errors::TimeoutError, e.message
         rescue SocketError => e
-          raise ActionNativePush::Errors::ConnectionError, e.message
+          raise ActionPush::Errors::ConnectionError, e.message
         rescue OpenSSL::SSL::SSLError => e
           if e.message.include?("SSL_connect")
-            raise ActionNativePush::Errors::ConnectionError, e.message
+            raise ActionPush::Errors::ConnectionError, e.message
           else
             raise
           end
@@ -94,19 +94,19 @@ module ActionNativePush
 
           case
           when reason =~ /message is too big/i
-            raise ActionNativePush::Errors::PayloadTooLargeError, reason
+            raise ActionPush::Errors::PayloadTooLargeError, reason
           when code == "400"
-            raise ActionNativePush::Errors::BadRequestError, reason
+            raise ActionPush::Errors::BadRequestError, reason
           when code == "404"
-            raise ActionNativePush::Errors::TokenError, reason
+            raise ActionPush::Errors::TokenError, reason
           when code.in?([ "401", "403" ])
-            raise ActionNativePush::Errors::ForbiddenError, reason
+            raise ActionPush::Errors::ForbiddenError, reason
           when code == "429"
-            raise ActionNativePush::Errors::TooManyRequestsError, reason
+            raise ActionPush::Errors::TooManyRequestsError, reason
           when code == "503"
-            raise ActionNativePush::Errors::ServiceUnavailableError, reason
+            raise ActionPush::Errors::ServiceUnavailableError, reason
           else
-            raise ActionNativePush::Errors::InternalServerError, reason
+            raise ActionPush::Errors::InternalServerError, reason
           end
         end
     end

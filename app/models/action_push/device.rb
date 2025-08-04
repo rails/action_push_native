@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-module ActionNativePush
+module ActionPush
   class Device < ApplicationRecord
     belongs_to :owner, polymorphic: true, optional: true
 
-    validates :application, inclusion: { in: ActionNativePush.supported_applications }
+    validates :application, inclusion: { in: ActionPush.supported_applications }
 
     def on_token_error
       destroy!

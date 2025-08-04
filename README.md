@@ -1,12 +1,12 @@
-# Action Native Push
+# Action Push
 
-Action Native Push is a Rails push notification gem for mobile platforms, supporting FCM (Android) and APNs (iOS).
+Action Push is a Rails push notification gem for mobile platforms, supporting FCM (Android) and APNs (iOS).
 
 ## Installation
 
 ```ruby
-1. bundle add action_native_push
-2. bin/rails action_native_push:install
+1. bundle add actionpush
+2. bin/rails actionpush:install
 3. bin/rails db:migrate
 ```
 
@@ -65,7 +65,7 @@ The following options are supported:
     ActiveJob default queue name.
 - `log_job_arguments`: Whether to log job arguments when sending notifications. Defaults to `false`.
 - `report_job_retries`: Whether to report job retries in the logs. Defaults to `false`.
-- `enabled`: Whether the Action Native Push engine should send notifications, by default it is
+- `enabled`: Whether the Action Push engine should send notifications, by default it is
     enabled in all non-local environments.
 - `applications`: A hash of applications to configure. See the example format in `config/push.yml`.
 
@@ -73,7 +73,7 @@ You can configure these settings either in the `config/push.yml` file or in your
 configuration files (e.g., `config/environments/production.rb`):
 
 ```ruby
-config.action_native_push.job_queue_name = "realtime"
+config.action_push.job_queue_name = "realtime"
 ```
 
 ## Usage
@@ -87,9 +87,9 @@ device = Device.create! \
   token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
   application: "ios"
 
-notification = ActionNativePush::Notification.new \
+notification = ActionPush::Notification.new \
   title: "Hello world!",
-  body:  "Welcome to Action Native Push",
+  body:  "Welcome to Action Push",
 
 notification.deliver_later_to(device)
 ```
@@ -115,7 +115,7 @@ You can configure a custom service payload to be sent with the notification. Thi
 need to send additional data that is specific to the service you are using (e.g., FCM or APNs).
 
 ```ruby
-ActionNativePush::Notification.new \
+ActionPush::Notification.new \
   service_payload: {
     apns: { category: "observable", content_available: 1 }
   },
@@ -134,11 +134,11 @@ Messaging.
 You can specify a global `before_delivery` callback to modify or cancel the notification before it is sent:
 
 ```ruby
-  ActionNativePush::Notification.before_delivery = do |notification|
+  ActionPush::Notification.before_delivery = do |notification|
     throw :abort if Calendar.find(notification.context[:calendar_id]).expired?
   end
 
-  notification = ActionNativePush::Notification.new \
+  notification = ActionPush::Notification.new \
    custom_payload: {
      calendar_id: @calendar.id,
      identity_id: @identity.id
@@ -170,9 +170,9 @@ You can use a custom device model, as long as:
 
 1. It can be serialized and deserialized by `ActiveJob`.
 2. It responds to the `token` and `application` methods.
-3. It implements an `on_token_error` callback to handle token errors. By default, device models handle this [by destroying the record](https://github.com/basecamp/action_native_push/blob/main/app/models/action_native_push/device.rb#L10-L12).
+3. It implements an `on_token_error` callback to handle token errors. By default, device models handle this [by destroying the record](https://github.com/basecamp/actionpush/blob/main/app/models/action_push/device.rb#L10-L12).
 
-### `ActionNativePush::Notification` attributes
+### `ActionPush::Notification` attributes
 
 | Name           | Description
 |------------------|------------
@@ -188,4 +188,4 @@ You can use a custom device model, as long as:
 
 ## License
 
-Action Native Push is licensed under MIT.
+Action Push is licensed under MIT.

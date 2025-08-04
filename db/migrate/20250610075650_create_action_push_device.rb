@@ -1,6 +1,6 @@
-class CreateActionNativePushDevice < ActiveRecord::Migration[8.0]
+class CreateActionPushDevice < ActiveRecord::Migration[8.0]
   def change
-    create_table :action_native_push_devices do |t|
+    create_table :action_push_devices do |t|
       t.string :name
       t.string :application, null: false
       t.string :token, null: false

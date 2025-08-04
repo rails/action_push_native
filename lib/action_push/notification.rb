@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module ActionNativePush
-  # = Action Native Push Notification
+module ActionPush
+  # = Action Push Notification
   #
   # A notification that can be delivered to devices.
   class Notification
@@ -49,7 +49,7 @@ module ActionNativePush
     end
 
     def deliver_to(device)
-      return unless ActionNativePush.enabled
+      return unless ActionPush.enabled
 
       self.token = device.token
       begin
@@ -84,9 +84,9 @@ module ActionNativePush
 
     private
       def service_for(device)
-        service_config = ActionNativePush.applications[device.application.to_sym]
-        raise "ActionNativePush: Application #{device.application} is not configured" unless service_config
-        service_class = "ActionNativePush::Service::#{service_config[:service].capitalize}".constantize
+        service_config = ActionPush.applications[device.application.to_sym]
+        raise "ActionPush: Application #{device.application} is not configured" unless service_config
+        service_class = "ActionPush::Service::#{service_config[:service].capitalize}".constantize
         service_class.new(service_config)
       end
   end

@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 require "zeitwerk"
-require "action_native_push/version"
-require "action_native_push/engine"
+require "action_push/version"
+require "action_push/engine"
 require "net/http"
 require "apnotic"
 require "googleauth"
 
-loader = Zeitwerk::Loader.for_gem
+loader= Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
 loader.ignore("#{__dir__}/generators")
 loader.setup
 
-module ActionNativePush
+module ActionPush
   mattr_accessor :job_queue_name, default: ActiveJob::Base.default_queue_name
   mattr_accessor :log_job_arguments, default: false
   mattr_accessor :report_job_retries, default: false
