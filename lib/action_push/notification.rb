@@ -5,24 +5,21 @@ module ActionPush
   #
   # A notification that can be delivered to devices.
   class Notification
-    include ActiveSupport::Callbacks
+    extend ActiveModel::Callbacks
 
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :service_payload, :custom_payload
     attr_accessor :context
     attr_accessor :token
 
-    define_callbacks :delivery
-    set_callback     :delivery, :before, -> { self.class.before_delivery(self) }
+    class_attribute :queue_name, default: ActiveJob::Base.default_queue_name
 
-    class << self
-      def before_delivery(notification)
-        @before_delivery&.call(notification)
-      end
-
-      def before_delivery=(block)
-        @before_delivery = block
-      end
+    def self.queue_as(name)
+      self.queue_name = name
     end
+
+    class_attribute :enabled, default: !Rails.env.test?
+
+    define_model_callbacks :delivery
 
     # === Attributes
     #
@@ -49,7 +46,7 @@ module ActionPush
     end
 
     def deliver_to(device)
-      return unless ActionPush.enabled
+      return unless enabled
 
       self.token = device.token
       begin
@@ -64,7 +61,7 @@ module ActionPush
 
     def deliver_later_to(devices)
       Array(devices).each do |device|
-        NotificationDeliveryJob.perform_later(self.as_json, device)
+        NotificationDeliveryJob.set(queue: queue_name).perform_later(self.class.name, self.as_json, device)
       end
     end
 

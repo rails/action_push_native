@@ -14,19 +14,18 @@ This will install the gem and run the necessary migrations to set up the databas
 
 ## Configuration
 
-The installation will create a `config/push.yml` file with a default configuration for iOS
-and Android applications. To send push notifications, you need to set up credentials for each configured application.
-You can add as many applications as you like, as long as each one is configured
-with a supported notification service (FCM or APNs).
+The installation will create:
+
+- `config/push.yml` file with a default configuration for Apple
+and Android.
+- `app/models/action_push_notification.rb` model to send push notifications.
 
 Example `config/push.yml`:
 
 ```yaml
 shared:
-  job_queue_name: realtime
   report_job_retries: true
   log_job_arguments: true
-  # enabled: false # Uncomment to disable the notification delivery
   applications:
     ios:
       service: apns
@@ -59,25 +58,34 @@ shared:
       request_timeout: 30
 ```
 
+To send push notifications, you need to set up credentials for each configured application.
+You can add as many applications as you like, as long as each one is configured
+with a supported notification service (FCM or APNs).
+
 The following options are supported:
 
-- `job_queue_name`: The name of the job queue to use for sending notifications. Defaults to the
-    ActiveJob default queue name.
 - `log_job_arguments`: Whether to log job arguments when sending notifications. Defaults to `false`.
 - `report_job_retries`: Whether to report job retries in the logs. Defaults to `false`.
-- `enabled`: Whether the Action Push engine should send notifications, by default it is
-    enabled in all non-local environments.
 - `applications`: A hash of applications to configure. See the example format in `config/push.yml`.
 
-You can configure these settings either in the `config/push.yml` file or in your per-environment
-configuration files (e.g., `config/environments/production.rb`):
+Example `app/models/action_push_notification.rb`:
 
 ```ruby
-config.action_push.job_queue_name = "realtime"
+class ApplicationPushNotification < ActionPush::Notification
+  # Set a custom job queue_name
+  queue_as :realtime
+
+  # Controls whether push notifications are enabled
+  # self.enabled = true
+
+  # Define a custom callback to modify or abort the notification before it is sent
+  # before_delivery do |notification|
+  #   throw :abort if Notification.find(notification.context[:notification_id]).expired?
+  # end
+end
 ```
 
 ## Usage
-
 
 ### Create and send a notification asynchronously to a device
 
@@ -87,7 +95,7 @@ device = Device.create! \
   token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
   application: "ios"
 
-notification = ActionPush::Notification.new \
+notification = ApplicationPushNotification.new \
   title: "Hello world!",
   body:  "Welcome to Action Push",
 
@@ -131,14 +139,17 @@ Messaging.
 
 ### `before_delivery` callback
 
-You can specify a global `before_delivery` callback to modify or cancel the notification before it is sent:
+You can specify custom `delivery` callbacks to modify or cancel the notification before it is sent
+by subclassing `ApplicationPushNotification` and defining a `before_delivery` block:
 
 ```ruby
-  ActionPush::Notification.before_delivery = do |notification|
-    throw :abort if Calendar.find(notification.context[:calendar_id]).expired?
+  class CalendarPushNotification < ApplicationPushNotification
+    before_delivery do |notification|
+      throw :abort if Calendar.find(notification.context[:calendar_id]).expired?
+    end
   end
 
-  notification = ActionPush::Notification.new \
+  notification = CalendarPushNotification.new \
    custom_payload: {
      calendar_id: @calendar.id,
      identity_id: @identity.id
@@ -152,7 +163,7 @@ You can specify a global `before_delivery` callback to modify or cancel the noti
 
 ### Linking a Device to a Record
 
-A Device can be associated with any record in your application via the `record` polymorphic association:
+A Device can be associated with any record in your application via the `owner` polymorphic association:
 
 ```ruby
   user = User.find_by_email_address("jacopo@37signals.com")
@@ -161,7 +172,7 @@ A Device can be associated with any record in your application via the `record` 
     name: "iPhone 16",
     token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
     application: "ios"
-    record: user
+    owner: user
 ```
 
 ### Using a custom Device model

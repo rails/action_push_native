@@ -99,7 +99,7 @@ module ActionPush
         end
 
         def build_notification
-          ActionPush::Notification.new(
+          ApplicationPushNotification.new(
             title: "Hi!",
             body: "This is a push notification",
             badge: 1,

@@ -1,6 +1,5 @@
 shared:
   # Use a different queue name than the default
-  # job_queue_name: realtime
 
   # Useful to monitor initial rollouts.
   # report_job_retries: true
@@ -44,7 +43,3 @@ shared:
 development:
   # Job arguments aren't logged by default, since they can contain sensitive data.
   log_job_arguments: true
-
-test:
-  # Force sending notifications in tests:
-  # enabled: true

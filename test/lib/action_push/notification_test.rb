@@ -18,8 +18,8 @@ module ActionPush
 
     test "deliver_later_to" do
       @notification.deliver_later_to([ action_push_devices(:iphone), action_push_devices(:pixel9) ])
-      assert_enqueued_with job: ActionPush::NotificationDeliveryJob, args: [ @notification.as_json, action_push_devices(:pixel9) ]
-      assert_enqueued_with job: ActionPush::NotificationDeliveryJob, args: [ @notification.as_json, action_push_devices(:iphone) ]
+      assert_enqueued_with job: ActionPush::NotificationDeliveryJob, args: [ "ApplicationPushNotification", @notification.as_json, action_push_devices(:pixel9) ], queue: :realtime
+      assert_enqueued_with job: ActionPush::NotificationDeliveryJob, args: [ "ApplicationPushNotification", @notification.as_json, action_push_devices(:iphone) ], queue: :realtime
     end
 
     test "deliver_to APNs" do
@@ -56,31 +56,37 @@ module ActionPush
     end
 
     test "deliver_to is a noop when disabled" do
-      previously_enabled, ActionPush.enabled = ActionPush.enabled, false
+      previously_enabled, ApplicationPushNotification.enabled = ApplicationPushNotification.enabled, false
 
       device = action_push_devices(:iphone)
       ActionPush::Service::Apns.any_instance.expects(:push).never
       @notification.deliver_to(device)
     ensure
-      ActionPush.enabled = previously_enabled
+      ApplicationPushNotification.enabled = previously_enabled
     end
 
     test "deliver_to before_delivery callback" do
-      callback_called = false
-      previous_before_delivery, Notification.before_delivery = Notification.instance_variable_get(:@_before_delivery), proc { callback_called = true }
-      ActionPush::Service::Apns.any_instance.stubs(:push)
+      notification = AbortablePushNotification.new(context: { abort_delivery: true })
+      ActionPush::Service::Apns.any_instance.expects(:push).never
+      notification.deliver_to(action_push_devices(:iphone))
 
-      perform_enqueued_jobs only: ActionPush::NotificationDeliveryJob do
-        @notification.deliver_later_to(action_push_devices(:iphone))
-      end
-      assert callback_called, "Expected before_delivery callback to be called"
-    ensure
-      Notification.before_delivery = previous_before_delivery
+      notification = AbortablePushNotification.new(context: { abort_delivery: false })
+      ActionPush::Service::Apns.any_instance.stubs(:push)
+      notification.deliver_to(action_push_devices(:iphone))
     end
 
     private
+      class AbortablePushNotification < ApplicationPushNotification
+        before_delivery do |notification|
+          throw :abort if notification.context[:abort_delivery]
+        end
+      end
+
+      # Build a sample notification for testing purposes
+      # This method can be used to create a notification instance with predefined attributes.
+
       def build_notification
-        ActionPush::Notification.new \
+        ApplicationPushNotification.new \
           title: "Hi!",
           body: "This is a push notification",
           badge: 1,

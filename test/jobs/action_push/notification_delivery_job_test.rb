@@ -7,7 +7,7 @@ module ActionPush
       Notification.any_instance.stubs(:deliver_to).raises(Errors::TooManyRequestsError)
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationDeliveryJob do
-        ActionPush::NotificationDeliveryJob.perform_later({}, device)
+        ActionPush::NotificationDeliveryJob.perform_later("ApplicationPushNotification", {}, device)
       end
 
       [ 1, 2, 4, 8, 16 ].each do |minutes|
@@ -16,7 +16,7 @@ module ActionPush
       end
 
       Notification.any_instance.stubs(:deliver_to)
-      ActionPush::NotificationDeliveryJob.perform_now({}, device)
+      ActionPush::NotificationDeliveryJob.perform_now("ApplicationPushNotification", {}, device)
       perform_enqueued_jobs only: ActionPush::NotificationDeliveryJob
       assert_enqueued_jobs 0, only: ActionPush::NotificationDeliveryJob
     end
@@ -26,7 +26,7 @@ module ActionPush
       Notification.any_instance.stubs(:deliver_to).raises(Errors::BadDeviceTopicError)
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationDeliveryJob do
-        ActionPush::NotificationDeliveryJob.perform_later({}, device)
+        ActionPush::NotificationDeliveryJob.perform_later("ApplicationPushNotification", {}, device)
       end
       perform_enqueued_jobs only: ActionPush::NotificationDeliveryJob
       assert_enqueued_jobs 0, only: ActionPush::NotificationDeliveryJob
@@ -38,7 +38,7 @@ module ActionPush
       ActionPush::Service::Fcm.any_instance.stubs(:access_token).returns("fake_access_token")
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationDeliveryJob do
-        ActionPush::NotificationDeliveryJob.perform_later({}, device)
+        ActionPush::NotificationDeliveryJob.perform_later("ApplicationPushNotification", {}, device)
       end
       perform_enqueued_jobs only: ActionPush::NotificationDeliveryJob
       assert_enqueued_jobs 1, only: ActionPush::NotificationDeliveryJob

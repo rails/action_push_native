@@ -2,8 +2,6 @@
 
 module ActionPush
   class NotificationDeliveryJob < ActiveJob::Base
-    queue_as ActionPush.job_queue_name
-
     self.log_arguments = ActionPush.log_job_arguments
 
     discard_on ActiveJob::DeserializationError
@@ -51,8 +49,8 @@ module ActionPush
       retry_on Signet::RemoteServerError
     end
 
-    def perform(notification_attributes, device)
-      Notification.new(**notification_attributes).deliver_to(device)
+    def perform(notification_class, notification_attributes, device)
+      notification_class.constantize.new(**notification_attributes).deliver_to(device)
     end
   end
 end
