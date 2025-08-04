@@ -4,7 +4,7 @@ class CreateActionNativePushDevice < ActiveRecord::Migration[8.0]
       t.string :name
       t.string :application, null: false
       t.string :token, null: false
-      t.belongs_to :record, polymorphic: true
+      t.belongs_to :owner, polymorphic: true
 
       t.timestamps
     end

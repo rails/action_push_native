@@ -2,7 +2,7 @@
 
 module ActionNativePush
   class Device < ApplicationRecord
-    belongs_to :record, polymorphic: true, optional: true
+    belongs_to :owner, polymorphic: true, optional: true
 
     validates_presence_of :token
     validates :application, inclusion: { in: ActionNativePush.supported_applications }
