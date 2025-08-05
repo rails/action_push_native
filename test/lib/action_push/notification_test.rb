@@ -34,7 +34,7 @@ module ActionPush
 
       apns = stub(:apns)
       apns.expects(:push).with(@notification)
-      ActionPush::Service::Apns.expects(:new).with(ActionPush.platforms[:apple]).returns(apns)
+      ActionPush::Service::Apns.expects(:new).with(ActionPush.config_for(:apple, @notification)).returns(apns)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)
@@ -46,7 +46,7 @@ module ActionPush
 
       fcm = stub(:fcm)
       fcm.expects(:push).with(@notification)
-      ActionPush::Service::Fcm.expects(:new).with(ActionPush.platforms[:google]).returns(fcm)
+      ActionPush::Service::Fcm.expects(:new).with(ActionPush.config_for(:google, @notification)).returns(fcm)
 
       assert_changes -> { @notification.token }, from: nil, to: device.token do
         @notification.deliver_to(device)

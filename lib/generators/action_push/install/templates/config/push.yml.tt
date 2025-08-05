@@ -1,14 +1,11 @@
 shared:
-  # Use a different queue name than the default
-
-  # Useful to monitor initial rollouts.
-  # report_job_retries: true
-
-  platforms:
-    # Currently supported services are: apns and fcm.
-    apple:
-      service: apns
-
+  apple:
+    # When custom settings are needed for individual notification types,
+    # start by defining a shared `application` configuration. Then, optionally add
+    # specific settings for each notification class (e.g., `calendar`, `email`).
+    # These settings will be merged with the base `application` configuration.
+    # The `application` settings also apply to the `ApplicationPushNotification` class.
+    application:
       # Token auth params
       # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
       key_id: your_key_id
@@ -28,14 +25,18 @@ shared:
       # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
       # will be considered as PRODUCTION environment.
       # connect_to_development_server: <%# Rails.env.development? %>
-    google:
-      service: fcm
+    calendar:
+      # Special configuration for CalendarPushNotification
+      timeout: 30
+    email:
+      # If not inferred, the Class name can be specified directly
+      # class_name: "CustomEmailPushNotification"
+  google:
+    # Your Firebase project service account credentials
+    # See https://firebase.google.com/docs/cloud-messaging/auth-server
+    encryption_key: your_service_account_json_file
 
-      # Your Firebase project service account credentials
-      # See https://firebase.google.com/docs/cloud-messaging/auth-server
-      encryption_key: your_service_account_json_file
+    # Firebase project_id
+    project_id: your_project_id
 
-      # Firebase project_id
-      project_id: your_project_id
-
-      # request_timeout: 15
+    # request_timeout: 15

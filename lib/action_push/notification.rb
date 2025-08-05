@@ -51,7 +51,7 @@ module ActionPush
       self.token = device.token
       begin
         run_callbacks :delivery do
-          service_for(device).push(self)
+          ActionPush.service_for(device, self.class).push(self)
         end
       rescue Errors::TokenError => e
         Rails.logger.info("Device##{device.id} token is invalid: #{e.message}")
@@ -78,13 +78,5 @@ module ActionPush
         context: context
       }.compact
     end
-
-    private
-      def service_for(device)
-        service_config = ActionPush.platforms[device.platform.to_sym]
-        raise "ActionPush: Platform #{device.platform} is not configured" unless service_config
-        service_class = "ActionPush::Service::#{service_config[:service].capitalize}".constantize
-        service_class.new(service_config)
-      end
   end
 end

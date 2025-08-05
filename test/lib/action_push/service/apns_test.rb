@@ -4,9 +4,9 @@ module ActionPush
   module Service
     class ApnsTest < ActiveSupport::TestCase
       setup do
-        @config = ActionPush.platforms[:apple]
-        @apns = Apns.new(@config)
         @notification = build_notification
+        @config = ActionPush.config_for(:apple, @notification)
+        @apns = Apns.new(@config)
       end
       teardown { Apns.connection_pools = {} }
 
