@@ -6,6 +6,7 @@ module ActionPush
   # A notification that can be delivered to devices.
   class Notification
     extend ActiveModel::Callbacks
+    include NotificationBuilder
 
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload
     attr_accessor :context
@@ -48,42 +49,7 @@ module ActionPush
       @context = context.presence || new_context
     end
 
-    def new(...)
-      self.tap { send(:initialize, ...) }
-    end
-
-    def self.with_apple(data)
-      allocate.with_apple(data)
-    end
-
-    def with_apple(data)
-      dup.tap do |notification|
-        notification.apns_payload ||= {}
-        notification.apns_payload.merge!(data)
-      end
-    end
-
-    def self.with_google(data)
-      allocate.with_google(data)
-    end
-
-    def with_google(data)
-      dup.tap do |notification|
-        notification.fcm_payload ||= {}
-        notification.fcm_payload.merge!(data)
-      end
-    end
-
-    def self.silent
-      allocate.silent
-    end
-
-    def silent
-      dup.tap do |notification|
-        notification.high_priority = false
-      end.with_apple(content_available: 1)
-    end
-
+    # Backward compatibilty methods.
     def apns_payload_with_fallback
       @apns_payload || service_payload[:apns]
     end
