@@ -51,7 +51,14 @@ module ActionPush
       retry_on Signet::RemoteServerError
     end
 
-    def perform(notification_class, notification_attributes, device)
+    def perform(notification_class, notification_attributes, device = nil)
+      # Backward compatibility to handle in-flight jobs.
+      if device.nil?
+        device = notification_attributes
+        notification_attributes = notification_class
+        notification_class = Notification
+      end
+
       notification_class.constantize.new(**notification_attributes).deliver_to(device)
     end
   end
