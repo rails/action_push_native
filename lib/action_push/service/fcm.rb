@@ -35,7 +35,7 @@ module ActionPush
                 collapse_key: notification.thread_id,
                 priority: notification.high_priority == true ? "high" : "normal"
               }
-            }.deep_merge(stringify_data(notification.fcm_payload) || {})
+            }.deep_merge(stringify_data(notification.fcm_payload_with_fallback) || {})
           })
         end
 

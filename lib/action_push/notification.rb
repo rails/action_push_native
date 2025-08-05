@@ -7,8 +7,7 @@ module ActionPush
   class Notification
     extend ActiveModel::Callbacks
 
-    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority
-    attr_writer :apns_payload, :fcm_payload
+    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload
     attr_accessor :context
     attr_accessor :token
     # Legacy fields which will be removed in the next release.
@@ -58,12 +57,10 @@ module ActionPush
     end
 
     def with_apple(data)
-      self.apns_payload = data
-      self
-    end
-
-    def apns_payload
-      service_payload[:apns] || @apns_payload
+      dup.tap do |notification|
+        notification.apns_payload ||= {}
+        notification.apns_payload.merge!(data)
+      end
     end
 
     def self.with_google(data)
@@ -71,12 +68,28 @@ module ActionPush
     end
 
     def with_google(data)
-      self.fcm_payload = data
-      self
+      dup.tap do |notification|
+        notification.fcm_payload ||= {}
+        notification.fcm_payload.merge!(data)
+      end
     end
 
-    def fcm_payload
-      service_payload[:fcm] || @fcm_payload
+    def self.silent
+      allocate.silent
+    end
+
+    def silent
+      dup.tap do |notification|
+        notification.high_priority = false
+      end.with_apple(content_available: 1)
+    end
+
+    def apns_payload_with_fallback
+      @apns_payload || service_payload[:apns]
+    end
+
+    def fcm_payload_with_fallback
+       @fcm_payload || service_payload[:fcm]
     end
 
     def deliver_to(device)

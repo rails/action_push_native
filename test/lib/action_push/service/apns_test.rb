@@ -54,7 +54,7 @@ module ActionPush
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
         high_priority = 10
         Apns.connection_pools = { @config => connection_pool }
-        @notification.service_payload[:apns] = { priority: high_priority, "thread-id": "changed" }
+        @notification = @notification.with_apple({ priority: high_priority, "thread-id": "changed" })
 
         @apns.push(@notification)
 

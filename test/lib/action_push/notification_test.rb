@@ -35,10 +35,26 @@ module ActionPush
       }
       notification = ActionPush::Notification.new(**attributes)
 
-      assert_equal({ category: "readable" }, notification.apns_payload)
-      assert_equal({ data: { badge: "1" } }, notification.fcm_payload)
+      assert_equal({ category: "readable" }, notification.apns_payload_with_fallback)
+      assert_equal({ data: { badge: "1" } }, notification.fcm_payload_with_fallback)
       assert_equal({ notification_id: 123 }, notification.context)
       assert_equal({ person: "Jacopo", extras: nil }, notification.custom_payload)
+    end
+
+    test "silent notification" do
+      notification = ActionPush::Notification.silent
+      assert_equal false, notification.high_priority
+      assert_equal({ content_available: 1 }, notification.apns_payload)
+    end
+
+    test "with_apple and with_google are non destructive" do
+      notification = @notification.with_apple(category: "readable").with_apple(thread_id: "67890")
+      assert_equal({ category: "readable", thread_id: "67890" }, notification.apns_payload)
+      assert_nil @notification.apns_payload
+
+      notification = @notification.with_google(data: { badge: "1" }).with_google(android: { notification_count: 1 })
+      assert_equal({ data: { badge: "1" }, android: { notification_count: 1 } }, notification.fcm_payload)
+      assert_nil @notification.fcm_payload
     end
 
     test "deliver_later_to" do
