@@ -39,5 +39,5 @@ module ActionPush
           notification.high_priority = false
         end.with_apple(content_available: 1)
       end
-    end
+  end
 end

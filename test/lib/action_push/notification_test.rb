@@ -12,7 +12,7 @@ module ActionPush
     end
 
     test "as_json" do
-      as_json = @notification.with_apple(category: "readable").with_google(data: { badge: "1" }).as_json
+      notification = @notification.with_apple(category: "readable").with_google(data: { badge: "1" })
       assert_equal({ title: "Hi!",
                      body: "This is a push notification",
                      badge: 1,
@@ -21,7 +21,7 @@ module ActionPush
                      high_priority: false,
                      apns_payload: { category: "readable" },
                      fcm_payload: { data: { badge: "1" } },
-                     context: { calendar_id: 1 } }, as_json)
+                     context: { calendar_id: 1 } }, notification.as_json)
     end
 
     test "legacy fields deserialization" do
@@ -47,7 +47,7 @@ module ActionPush
       assert_equal({ content_available: 1 }, notification.apns_payload)
     end
 
-    test "with_apple and with_google are non destructive" do
+    test "with_apple and with_google are non-destructive" do
       notification = @notification.with_apple(category: "readable").with_apple(thread_id: "67890")
       assert_equal({ category: "readable", thread_id: "67890" }, notification.apns_payload)
       assert_nil @notification.apns_payload
@@ -63,35 +63,9 @@ module ActionPush
       assert_enqueued_with job: ApplicationPushNotificationJob, args: [ "ActionPush::Notification", @notification.as_json, action_push_devices(:iphone) ]
     end
 
-    test "deliver_to APNs" do
+    test "deliver_to" do
       device = action_push_devices(:iphone)
-
-      apns = stub(:apns)
-      apns.expects(:push).with(@notification)
-      ActionPush::Service::Apns.expects(:new).with(ActionPush.config_for(:apple, @notification)).returns(apns)
-
-      assert_changes -> { @notification.token }, from: nil, to: device.token do
-        @notification.deliver_to(device)
-      end
-    end
-
-    test "deliver_to FCM" do
-      device = action_push_devices(:pixel9)
-
-      fcm = stub(:fcm)
-      fcm.expects(:push).with(@notification)
-      ActionPush::Service::Fcm.expects(:new).with(ActionPush.config_for(:google, @notification)).returns(fcm)
-
-      assert_changes -> { @notification.token }, from: nil, to: device.token do
-        @notification.deliver_to(device)
-      end
-    end
-
-    test "deliver_to calls device.on_token_error callback on token error" do
-      device = action_push_devices(:iphone)
-
-      device.expects(:on_token_error).once
-      ActionPush::Service::Apns.any_instance.expects(:push).raises(ActionPush::TokenError)
+      device.expects(:push).with(@notification)
 
       @notification.deliver_to(device)
     end

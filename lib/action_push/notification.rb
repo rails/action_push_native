@@ -59,16 +59,8 @@ module ActionPush
     end
 
     def deliver_to(device)
-      return unless enabled
-
-      self.token = device.token
-      begin
-        run_callbacks :delivery do
-          ActionPush.service_for(device, self.class).push(self)
-        end
-      rescue TokenError => e
-        Rails.logger.info("Device##{device.id} token is invalid: #{e.message}")
-        device.on_token_error
+      if enabled
+        run_callbacks(:delivery) { device.push(self) }
       end
     end
 
