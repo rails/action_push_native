@@ -99,21 +99,18 @@ module ActionPush
         end
 
         def build_notification
-          ApplicationPushNotification.new(
-            title: "Hi!",
-            body: "This is a push notification",
-            badge: 1,
-            thread_id: "12345",
-            sound: "default",
-            high_priority: false,
-            service_payload: {
-              apns: { category: "readable" },
-              fcm: { android: { collapse_key: "321" } }
-            },
-            custom_payload: { person: "Jacopo" }
-          ).tap do |notification|
-            notification.token = "123"
-          end
+          ApplicationPushNotification
+            .with_apple(category: "readable", custom_payload: { person: "Jacopo" })
+            .new(
+              title: "Hi!",
+              body: "This is a push notification",
+              badge: 1,
+              thread_id: "12345",
+              sound: "default",
+              high_priority: false
+            ).tap do |notification|
+              notification.token = "123"
+            end
         end
     end
   end

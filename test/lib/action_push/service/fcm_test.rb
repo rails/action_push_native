@@ -56,8 +56,8 @@ module ActionPush
       end
 
       test "push fcm payload can be overridden" do
-        @notification.service_payload[:fcm] = { android: { collapse_key: "changed", notification: nil } }
-        payload = { message: { token: "123", data: { person: "Jacopo", badge: "1" }, android: { collapse_key: "changed", priority: "normal" } } }
+        @notification = @notification.with_google(android: { collapse_key: "changed", notification: nil}, data: nil)
+        payload = { message: { token: "123", android: { collapse_key: "changed", priority: "normal" } } }
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
           with(body: payload.to_json, headers: { "Authorization"=>"Bearer fake_access_token" }).
           to_return(status: 200)
@@ -69,20 +69,18 @@ module ActionPush
 
       private
         def build_notification
-          ApplicationPushNotification.new(
-            title: "Hi!",
-            body: "This is a push notification",
-            badge: 1,
-            thread_id: "12345",
-            sound: "default",
-            high_priority: false,
-            service_payload: {
-              apns: { category: "readable" },
-              fcm:  { android: { collapse_key: "321" }.compact } },
-            custom_payload: { person: "Jacopo", badge: 1 }
-          ).tap do |notification|
-            notification.token = "123"
-          end
+          ApplicationPushNotification.
+            with_google(android: { collapse_key: "321" }, data: { person: "Jacopo", badge: 1 })
+            .new(
+              title: "Hi!",
+              body: "This is a push notification",
+              badge: 1,
+              thread_id: "12345",
+              sound: "default",
+              high_priority: false
+            ).tap do |notification|
+              notification.token = "123"
+            end
         end
 
         def stub_authorizer

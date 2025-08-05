@@ -7,9 +7,12 @@ module ActionPush
   class Notification
     extend ActiveModel::Callbacks
 
-    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :service_payload, :custom_payload
+    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority
+    attr_writer :apns_payload, :fcm_payload
     attr_accessor :context
     attr_accessor :token
+    # Legacy fields which will be removed in the next release.
+    attr_accessor :service_payload, :custom_payload
 
     class_attribute :queue_name, default: ActiveJob::Base.default_queue_name
 
@@ -30,19 +33,50 @@ module ActionPush
     #   sound - The sound to play when the notification is received
     #   high_priority - Whether to send the notification with high priority (default: true).
     #                   For silent notifications is recommended to set this to false.
-    #   service_payload - A hash of platform-specific payload data keyed by platform (e.g., :apns, :fcm)
-    #   custom_payload - A hash of custom data to include in the notification
-    #   context - A hash of additional context data that won't be sent to the device, but can be used in callbacks
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, custom_payload: {}, context: {})
+    #   service_payload, custom_payload, context - Legacy fields to handle in-flight jobs deserialization.
+    #
+    #   Any extra attributes is set inside the `context` hash.
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, custom_payload: {}, context: {}, **new_context)
       @title = title
       @body = body
       @badge = badge
       @thread_id = thread_id
       @sound = sound
       @high_priority = high_priority
+      # Legacy fields to handle in-flight jobs deserialization.
       @service_payload = service_payload
       @custom_payload = custom_payload
-      @context = context
+      @context = context.presence || new_context
+    end
+
+    def new(...)
+      self.tap { send(:initialize, ...) }
+    end
+
+    def self.with_apple(data)
+      allocate.with_apple(data)
+    end
+
+    def with_apple(data)
+      self.apns_payload = data
+      self
+    end
+
+    def apns_payload
+      service_payload[:apns] || @apns_payload
+    end
+
+    def self.with_google(data)
+      allocate.with_google(data)
+    end
+
+    def with_google(data)
+      self.fcm_payload = data
+      self
+    end
+
+    def fcm_payload
+      service_payload[:fcm] || @fcm_payload
     end
 
     def deliver_to(device)
@@ -73,9 +107,9 @@ module ActionPush
         thread_id: thread_id,
         sound: sound,
         high_priority: high_priority,
-        service_payload: service_payload.compact,
-        custom_payload: custom_payload.compact,
-        context: context
+        context: context,
+        apns_payload: apns_payload,
+        fcm_payload: fcm_payload
       }.compact
     end
   end

@@ -35,7 +35,7 @@ module ActionPush
                 collapse_key: notification.thread_id,
                 priority: notification.high_priority == true ? "high" : "normal"
               }
-            }.deep_merge(notification.service_payload.fetch(:fcm, {}))
+            }.deep_merge(stringify_data(notification.fcm_payload) || {})
           })
         end
 
@@ -44,6 +44,15 @@ module ActionPush
           payload.dig(:message, :android).try(&:compact!)
           payload[:message].compact!
           payload
+        end
+
+        # FCM requires data values to be strings.
+        def stringify_data(fcm_payload)
+          fcm_payload&.tap do |payload|
+            if payload[:data]
+              payload[:data] = payload[:data].compact.transform_values(&:to_s)
+            end
+          end
         end
 
         def post_request(payload)

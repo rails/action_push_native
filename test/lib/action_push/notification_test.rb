@@ -12,15 +12,33 @@ module ActionPush
     end
 
     test "as_json" do
+      as_json = @notification.with_apple(category: "readable").with_google(data: { badge: "1" }).as_json
       assert_equal({ title: "Hi!",
                      body: "This is a push notification",
                      badge: 1,
                      thread_id: "12345",
                      sound: "default",
                      high_priority: false,
-                     service_payload: { apns: { category: "readable" } },
-                     custom_payload: { person: "Jacopo" },
-                     context: {} }, @notification.as_json)
+                     apns_payload: { category: "readable" },
+                     fcm_payload: { data: { badge: "1" } },
+                     context: { calendar_id: 1 } }, as_json)
+    end
+
+    test "legacy fields deserialization" do
+      attributes = {
+        service_payload: {
+          apns: { category: "readable" },
+          fcm:  { data: { badge: "1" } }
+        },
+        context: { notification_id: 123 },
+        custom_payload: { person: "Jacopo", extras: nil }
+      }
+      notification = ActionPush::Notification.new(**attributes)
+
+      assert_equal({ category: "readable" }, notification.apns_payload)
+      assert_equal({ data: { badge: "1" } }, notification.fcm_payload)
+      assert_equal({ notification_id: 123 }, notification.context)
+      assert_equal({ person: "Jacopo", extras: nil }, notification.custom_payload)
     end
 
     test "deliver_later_to" do
@@ -79,11 +97,7 @@ module ActionPush
           thread_id: "12345",
           sound: "default",
           high_priority: false,
-          service_payload: {
-            apns: { category: "readable" },
-            fcm:  nil
-          },
-          custom_payload: { person: "Jacopo", extras: nil }
+          calendar_id: 1
       end
   end
 end
