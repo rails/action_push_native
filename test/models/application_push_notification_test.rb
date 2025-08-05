@@ -1,7 +1,7 @@
 require "test_helper"
 
 class ApplicationPushNotificationTest < ActiveSupport::TestCase
-  test "deliver_later_to" do
+  test "deliver_later_to with custom queue" do
     notification = ApplicationPushNotification.new title: "hi", body: "hello world!"
 
     notification.deliver_later_to([ action_push_devices(:iphone), action_push_devices(:pixel9) ])

@@ -49,7 +49,7 @@ module ActionPush
       @context = context.presence || new_context
     end
 
-    # Backward compatibilty methods.
+    # Backward compatibilty methods to handle in-flight jobs.
     def apns_payload_with_fallback
       @apns_payload || service_payload[:apns]
     end

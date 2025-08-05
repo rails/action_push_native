@@ -9,9 +9,4 @@ class ApplicationPushNotification < ActionPush::Notification
   # before_delivery do |notification|
   #   throw :abort if Notification.find(notification.context[:notification_id]).expired?
   # end
-
-  # Custom logic to handle token errors
-  # def on_token_error(device)
-  #   device.disable
-  # end
 end

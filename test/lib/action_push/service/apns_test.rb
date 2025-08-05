@@ -99,7 +99,7 @@ module ActionPush
         end
 
         def build_notification
-          ApplicationPushNotification
+          ActionPush::Notification
             .with_apple(category: "readable", custom_payload: { person: "Jacopo" })
             .new(
               title: "Hi!",
