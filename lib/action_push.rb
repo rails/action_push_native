@@ -11,9 +11,5 @@ loader.ignore("#{__dir__}/generators")
 loader.setup
 
 module ActionPush
-  mattr_accessor :applications, default: {}
-
-  def self.supported_applications
-    applications.keys.map(&:to_s)
-  end
+  mattr_accessor :platforms, default: {}
 end

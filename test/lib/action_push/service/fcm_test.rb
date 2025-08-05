@@ -4,7 +4,7 @@ module ActionPush
   module Service
     class FcmTest < ActiveSupport::TestCase
       setup do
-        @fcm = Fcm.new(ActionPush.applications[:android])
+        @fcm = Fcm.new(ActionPush.platforms[:google])
         @notification = build_notification
         stub_authorizer
       end

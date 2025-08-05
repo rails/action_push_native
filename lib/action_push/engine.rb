@@ -12,7 +12,7 @@ module ActionPush
       config_path = Pathname.new(app.config.paths["config/push"].first)
       options = config_path.exist? ? app.config_for(config_path).to_h : {}
 
-      options[:applications] = config.action_push.applications if config.action_push.applications
+      options[:platforms] = config.action_push.applications if config.action_push.applications
 
       options.each do |name, value|
         ActionPush.public_send("#{name}=", value)

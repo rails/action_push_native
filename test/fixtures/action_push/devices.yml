@@ -1,9 +1,9 @@
 iphone:
   name: iPhone 6
   token: 7bf61218414641979cfdeded6c3c38a036033158945f9675576ff5dbbdbab17b
-  application: ios
+  platform: apple
 
 pixel9:
   name: Google Pixel 9
   token: 29c7007e110aa74d5c2f4609495704cc65401f701bc4ab3c35dffb0dbe274491
-  application: android
+  platform: google

@@ -2,9 +2,9 @@ shared:
   # Useful to monitor initial rollouts.
   # report_job_retries: true
 
-  applications:
+  platforms:
     # Currently supported services are: apns and fcm.
-    ios:
+    apple:
       service: apns
 
       # Token auth params
@@ -26,7 +26,7 @@ shared:
       # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
       # will be considered as PRODUCTION environment.
       # connect_to_development_server: <%# Rails.env.development? %>
-    android:
+    google:
       service: fcm
 
       # Your Firebase project service account credentials

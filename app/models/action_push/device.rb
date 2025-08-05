@@ -4,7 +4,7 @@ module ActionPush
   class Device < ApplicationRecord
     belongs_to :owner, polymorphic: true, optional: true
 
-    validates :application, inclusion: { in: ActionPush.supported_applications }
+    enum :platform, { apple: "apple", google: "google" }
 
     def on_token_error
       destroy!

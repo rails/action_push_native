@@ -81,8 +81,8 @@ module ActionPush
 
     private
       def service_for(device)
-        service_config = ActionPush.applications[device.application.to_sym]
-        raise "ActionPush: Application #{device.application} is not configured" unless service_config
+        service_config = ActionPush.platforms[device.platform.to_sym]
+        raise "ActionPush: Platform #{device.platform} is not configured" unless service_config
         service_class = "ActionPush::Service::#{service_config[:service].capitalize}".constantize
         service_class.new(service_config)
       end

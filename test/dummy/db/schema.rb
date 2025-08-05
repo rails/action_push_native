@@ -13,7 +13,7 @@
 ActiveRecord::Schema[8.0].define(version: 2025_06_10_075650) do
   create_table "action_push_devices", force: :cascade do |t|
     t.string "name"
-    t.string "application", null: false
+    t.string "platform", null: false
     t.string "token", null: false
     t.string "owner_type"
     t.integer "owner_id"
