@@ -1,20 +1,6 @@
-# frozen_string_literal: true
-
-require "zeitwerk"
-require "action_push/version"
-require "action_push/engine"
-require "net/http"
-require "apnotic"
-require "googleauth"
-
-loader= Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
-loader.ignore("#{__dir__}/generators")
-loader.setup
-
-module ActionPush
-  mattr_accessor :applications, default: {}
-
-  def self.supported_applications
-    applications.keys.map(&:to_s)
-  end
-end
+# This file is the gem entrypoint required by the "actionpush" gemspec.
+# Zeitwerk expects the top-level module "ActionPush" to be defined in "action_push.rb".
+# we define a dummy 'Actionpush' module here to match the gem name,
+# and manually require 'action_push.rb' to load the actual namespace.
+module Actionpush;end
+require "action_push"
