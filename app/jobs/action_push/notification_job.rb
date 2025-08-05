@@ -63,3 +63,5 @@ module ActionPush
     end
   end
 end
+# Backward compat for in-flight jobs.
+ActionPush::NotificationDeliveryJob = ActionPush::NotificationJob
