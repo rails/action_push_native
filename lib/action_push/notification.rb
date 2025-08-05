@@ -66,7 +66,7 @@ module ActionPush
         run_callbacks :delivery do
           ActionPush.service_for(device, self.class).push(self)
         end
-      rescue Errors::TokenError => e
+      rescue TokenError => e
         Rails.logger.info("Device##{device.id} token is invalid: #{e.message}")
         device.on_token_error
       end

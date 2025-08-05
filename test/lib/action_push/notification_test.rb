@@ -91,7 +91,7 @@ module ActionPush
       device = action_push_devices(:iphone)
 
       device.expects(:on_token_error).once
-      ActionPush::Service::Apns.any_instance.expects(:push).raises(ActionPush::Errors::TokenError)
+      ActionPush::Service::Apns.any_instance.expects(:push).raises(ActionPush::TokenError)
 
       @notification.deliver_to(device)
     end

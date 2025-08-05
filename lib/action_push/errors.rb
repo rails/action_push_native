@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ActionPush::Errors
+module ActionPush
   class TimeoutError < StandardError; end
   class BadRequestError < StandardError; end
   class BadDeviceTopicError < StandardError; end

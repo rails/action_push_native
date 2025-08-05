@@ -2,6 +2,7 @@
 
 require "zeitwerk"
 require "action_push/engine"
+require "action_push/errors"
 require "net/http"
 require "apnotic"
 require "googleauth"

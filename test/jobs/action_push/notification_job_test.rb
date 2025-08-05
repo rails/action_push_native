@@ -4,7 +4,7 @@ module ActionPush
   class NotificationJobTest < ActiveSupport::TestCase
     test "429 errors are retried with an exponential backoff delay" do
       device = action_push_devices(:iphone)
-      Notification.any_instance.stubs(:deliver_to).raises(Errors::TooManyRequestsError)
+      Notification.any_instance.stubs(:deliver_to).raises(TooManyRequestsError)
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationJob do
         ActionPush::NotificationJob.perform_later("ApplicationPushNotification", {}, device)
@@ -23,7 +23,7 @@ module ActionPush
 
     test "BadDeviceTopic errors are discarded" do
       device = action_push_devices(:iphone)
-      Notification.any_instance.stubs(:deliver_to).raises(Errors::BadDeviceTopicError)
+      Notification.any_instance.stubs(:deliver_to).raises(BadDeviceTopicError)
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationJob do
         ActionPush::NotificationJob.perform_later("ApplicationPushNotification", {}, device)

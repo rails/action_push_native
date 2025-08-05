@@ -39,18 +39,18 @@ module ActionPush
       test "push response error" do
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
           to_return(status: 503, body: { error: { message: "Bad Request" } }.to_json)
-        assert_raises ActionPush::Errors::ServiceUnavailableError do
+        assert_raises ActionPush::ServiceUnavailableError do
           @fcm.push(@notification)
         end
 
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
           to_return(status: 400, body: { error: { message: "message is too big" } }.to_json)
-        assert_raises ActionPush::Errors::PayloadTooLargeError do
+        assert_raises ActionPush::PayloadTooLargeError do
           @fcm.push(@notification)
         end
 
         Net::HTTP.stubs(:start).raises(OpenSSL::SSL::SSLError.new("SSL_connect returned=1 errno=0 state=error"))
-        assert_raises ActionPush::Errors::ConnectionError do
+        assert_raises ActionPush::ConnectionError do
           @fcm.push(@notification)
         end
       end

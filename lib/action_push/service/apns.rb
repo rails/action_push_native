@@ -60,12 +60,12 @@ module ActionPush
           begin
             yield
           rescue Errno::ETIMEDOUT => e
-            raise ActionPush::Errors::TimeoutError, e.message
+            raise ActionPush::TimeoutError, e.message
           rescue Errno::ECONNRESET, Errno::ECONNREFUSED, SocketError => e
-            raise ActionPush::Errors::ConnectionError, e.message
+            raise ActionPush::ConnectionError, e.message
           rescue OpenSSL::SSL::SSLError => e
             if e.message.include?("SSL_connect")
-              raise ActionPush::Errors::ConnectionError, e.message
+              raise ActionPush::ConnectionError, e.message
             else
               raise
             end
@@ -97,27 +97,27 @@ module ActionPush
 
           case [ code, reason ]
           in [ nil, _ ]
-            raise ActionPush::Errors::TimeoutError
+            raise ActionPush::TimeoutError
           in [ "400", "BadDeviceToken" ]
-            raise ActionPush::Errors::DeviceTokenError, reason
+            raise ActionPush::DeviceTokenError, reason
           in [ "400", "DeviceTokenNotForTopic" ]
-            raise ActionPush::Errors::BadDeviceTopicError, reason
+            raise ActionPush::BadDeviceTopicError, reason
           in [ "400", _ ]
-            raise ActionPush::Errors::BadRequestError, reason
+            raise ActionPush::BadRequestError, reason
           in [ "403", _ ]
-            raise ActionPush::Errors::ForbiddenError, reason
+            raise ActionPush::ForbiddenError, reason
           in [ "404", _ ]
-            raise ActionPush::Errors::NotFoundError, reason
+            raise ActionPush::NotFoundError, reason
           in [ "410", _ ]
-            raise ActionPush::Errors::ExpiredTokenError, reason
+            raise ActionPush::ExpiredTokenError, reason
           in [ "413", _ ]
-            raise ActionPush::Errors::PayloadTooLargeError, reason
+            raise ActionPush::PayloadTooLargeError, reason
           in [ "429", _ ]
-            raise ActionPush::Errors::TooManyRequestsError, reason
+            raise ActionPush::TooManyRequestsError, reason
           in [ "503", _ ]
-            raise ActionPush::Errors::ServiceUnavailableError, reason
+            raise ActionPush::ServiceUnavailableError, reason
           else
-            raise ActionPush::Errors::InternalServerError, reason
+            raise ActionPush::InternalServerError, reason
           end
         end
     end

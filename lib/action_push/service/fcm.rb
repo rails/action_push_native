@@ -72,12 +72,12 @@ module ActionPush
         def rescue_and_reraise_network_errors
           yield
         rescue Net::ReadTimeout, Net::OpenTimeout => e
-          raise ActionPush::Errors::TimeoutError, e.message
+          raise ActionPush::TimeoutError, e.message
         rescue SocketError => e
-          raise ActionPush::Errors::ConnectionError, e.message
+          raise ActionPush::ConnectionError, e.message
         rescue OpenSSL::SSL::SSLError => e
           if e.message.include?("SSL_connect")
-            raise ActionPush::Errors::ConnectionError, e.message
+            raise ActionPush::ConnectionError, e.message
           else
             raise
           end
@@ -103,19 +103,19 @@ module ActionPush
 
           case
           when reason =~ /message is too big/i
-            raise ActionPush::Errors::PayloadTooLargeError, reason
+            raise ActionPush::PayloadTooLargeError, reason
           when code == "400"
-            raise ActionPush::Errors::BadRequestError, reason
+            raise ActionPush::BadRequestError, reason
           when code == "404"
-            raise ActionPush::Errors::TokenError, reason
+            raise ActionPush::TokenError, reason
           when code.in?([ "401", "403" ])
-            raise ActionPush::Errors::ForbiddenError, reason
+            raise ActionPush::ForbiddenError, reason
           when code == "429"
-            raise ActionPush::Errors::TooManyRequestsError, reason
+            raise ActionPush::TooManyRequestsError, reason
           when code == "503"
-            raise ActionPush::Errors::ServiceUnavailableError, reason
+            raise ActionPush::ServiceUnavailableError, reason
           else
-            raise ActionPush::Errors::InternalServerError, reason
+            raise ActionPush::InternalServerError, reason
           end
         end
     end
