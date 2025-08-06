@@ -8,7 +8,7 @@ module ActionPush
     extend ActiveModel::Callbacks
     include NotificationBuilder
 
-    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload
+    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload, :data
     attr_accessor :context
     attr_accessor :token
     # Legacy fields which will be removed in the next release.
@@ -51,11 +51,15 @@ module ActionPush
 
     # Backward compatibilty methods to handle in-flight jobs.
     def apns_payload_with_fallback
-      @apns_payload || service_payload[:apns]
+      apns_payload || service_payload[:apns] || {}
     end
 
     def fcm_payload_with_fallback
-       @fcm_payload || service_payload[:fcm]
+       fcm_payload || service_payload[:fcm] || {}
+    end
+
+    def data_with_fallback
+      data || custom_payload || {}
     end
 
     def deliver_to(device)
@@ -80,7 +84,8 @@ module ActionPush
         high_priority: high_priority,
         context: context,
         apns_payload: apns_payload,
-        fcm_payload: fcm_payload
+        fcm_payload: fcm_payload,
+        data: data
       }.compact
     end
   end

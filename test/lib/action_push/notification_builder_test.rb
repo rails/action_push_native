@@ -18,9 +18,15 @@ module ActionPush
     end
 
     test "with_google" do
-      notification = @notification.with_google(data: { badge: "1" }).with_google(android: { notification_count: 1 })
-      assert_equal({ data: { badge: "1" }, android: { notification_count: 1 } }, notification.fcm_payload)
+      notification = @notification.with_google(notification: { collapse_key: "123" }).with_google(android: { notification_count: 1 })
+      assert_equal({ notification: { collapse_key: "123" }, android: { notification_count: 1 } }, notification.fcm_payload)
       assert_nil @notification.fcm_payload
+    end
+
+    test "with_data" do
+      notification = @notification.with_data({ badge: "1" })
+      assert_equal({ badge: "1" }, notification.data)
+      assert_nil @notification.data
     end
   end
 end

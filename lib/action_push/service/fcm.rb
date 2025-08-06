@@ -23,8 +23,7 @@ module ActionPush
           deep_compact({
             message: {
               token: notification.token,
-              # FCM requires data values to be strings.
-              data: notification.custom_payload.compact.transform_values(&:to_s),
+              data: stringify(notification.data_with_fallback),
               android: {
                 notification: {
                   title: notification.title,
@@ -35,7 +34,7 @@ module ActionPush
                 collapse_key: notification.thread_id,
                 priority: notification.high_priority == true ? "high" : "normal"
               }
-            }.deep_merge(stringify_data(notification.fcm_payload_with_fallback) || {})
+            }.deep_merge(stringify_data(notification.fcm_payload_with_fallback))
           })
         end
 
@@ -46,13 +45,15 @@ module ActionPush
           payload
         end
 
-        # FCM requires data values to be strings.
         def stringify_data(fcm_payload)
-          fcm_payload&.tap do |payload|
-            if payload[:data]
-              payload[:data] = payload[:data].compact.transform_values(&:to_s)
-            end
+          fcm_payload.tap do |payload|
+            payload[:data] = stringify(payload[:data]) if payload[:data]
           end
+        end
+
+        # FCM requires data values to be strings.
+        def stringify(hash)
+          hash.compact.transform_values(&:to_s)
         end
 
         def post_request(payload)

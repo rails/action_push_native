@@ -70,7 +70,8 @@ module ActionPush
       private
         def build_notification
           ActionPush::Notification.
-            with_google(android: { collapse_key: "321" }, data: { person: "Jacopo", badge: 1 })
+            with_google(android: { collapse_key: "321" })
+            .with_data(person: "Jacopo", badge: 1)
             .new(
               title: "Hi!",
               body: "This is a push notification",

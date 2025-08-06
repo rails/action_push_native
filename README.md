@@ -234,6 +234,7 @@ You can use a custom device model, as long as:
 |------------------|------------
 | :with_apple           | Set the Apple-specific payload for the notification.
 | :with_google          | Set the Google-specific payload for the notification.
+| :with_data            | Set the data payload for the notification, sent to all platforms.
 | :silent               | Create a silent notification that does not trigger a visual alert on the device.
 
 ## License

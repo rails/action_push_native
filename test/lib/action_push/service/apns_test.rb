@@ -54,13 +54,14 @@ module ActionPush
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
         high_priority = 10
         Apns.connection_pools = { @config => connection_pool }
-        @notification = @notification.with_apple({ priority: high_priority, "thread-id": "changed" })
+        @notification = @notification.with_apple({ priority: high_priority, "thread-id": "changed", custom_payload: nil })
 
         @apns.push(@notification)
 
         delivery =  connection_pool.deliveries.first[:notification]
         assert_equal high_priority, delivery.priority
         assert_equal "changed", delivery.thread_id
+        assert_nil delivery.custom_payload
       end
 
       private
@@ -100,7 +101,8 @@ module ActionPush
 
         def build_notification
           ActionPush::Notification
-            .with_apple(category: "readable", custom_payload: { person: "Jacopo" })
+            .with_apple(category: "readable")
+            .with_data(person: "Jacopo")
             .new(
               title: "Hi!",
               body: "This is a push notification",
