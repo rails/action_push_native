@@ -157,11 +157,11 @@ need to send additional data that is specific to the platform you are using.
 You can use `with_apple` for Apple and `with_google` for Google:
 
 ```ruby
-apple_notification = ActionPush::Notification
+apple_notification = ApplicationPushNotification
   .with_apple(category: "observable")
   .new(title: "Hi Apple")
 
-google_notification = ActionPush::Notification
+google_notification = ApplicationPushNotification
   .with_google({ data: { badge: 1 } })
   .new(title: "Hi Google")
 ```
