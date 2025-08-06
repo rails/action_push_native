@@ -43,10 +43,10 @@ module ActionPush
       @thread_id = thread_id
       @sound = sound
       @high_priority = high_priority
+      @context = context.presence || new_context
       # Legacy fields to handle in-flight jobs deserialization.
       @service_payload = service_payload
       @custom_payload = custom_payload
-      @context = context.presence || new_context
     end
 
     # Backward compatibilty methods to handle in-flight jobs.
