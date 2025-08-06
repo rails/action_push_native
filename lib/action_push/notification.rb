@@ -82,10 +82,10 @@ module ActionPush
         thread_id: thread_id,
         sound: sound,
         high_priority: high_priority,
-        context: context,
         apns_payload: apns_payload,
         fcm_payload: fcm_payload,
-        data: data
+        data: data,
+        **context
       }.compact
     end
   end

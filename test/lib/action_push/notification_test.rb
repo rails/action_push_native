@@ -46,7 +46,7 @@ module ActionPush
                      apns_payload: { category: "readable" },
                      fcm_payload: { notification: { collapse_key: "1" } },
                      data: { badge: "1" },
-                     context: { calendar_id: 1 } }, @notification.as_json)
+                     calendar_id: 1 }, @notification.as_json)
     end
 
     test "legacy fields deserialization" do
