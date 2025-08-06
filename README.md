@@ -115,7 +115,7 @@ for each class (e.g., `calendar`, `email`).
 device = Device.create! \
   name: "iPhone 16",
   token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
-  application: "ios"
+  platform: "apple"
 
 notification = ApplicationPushNotification.new \
   title: "Hello world!",
@@ -139,6 +139,16 @@ notification.deliver_to(device)
 It is recommended to send notifications asynchronously using `deliver_later_to`.
 This ensures error handling and retry logic are in place, and avoids blocking your application's execution.
 
+### Application data attributes
+
+You can pass custom data to the application using the `with_data` method:
+
+```ruby
+notification = ApplicationPushNotification
+  .with_data({ badge: "1" })
+  .new(title: "Welcome to Action Push")
+```
+
 ### Custom platform Payload
 
 You can configure custom platform payload to be sent with the notification. This is useful when you
@@ -156,12 +166,24 @@ google_notification = ActionPush::Notification
   .new(title: "Hi Google")
 ```
 
-# Silent Notifications
+The platform payload takes precedence over the other fields, and you can use it to override the
+default behaviour:
+
+```ruby
+notification = ApplicationPushNotification
+  .with_google({ android: { notification: { notification_count: nil } } })
+  .new(title: "Hello world!", body: "Welcome to Action Push", badge: 1)
+```
+
+This will unset the `notification_count` (`badge`) field in the Google payload, while keeping the `title`,
+`body`.
+
+### Silent Notifications
 
 You can create a silent notification via the `silent` method:
 
 ```ruby
-notification = Notification.silent.
+notification = Notification.silent
   .with_apple({ custom_payload: { id: 1 } })
   .with_google({ data: { id: 1 } })
 ```
@@ -187,8 +209,8 @@ constructor:
 
   data = { calendar_id: @calendar.id, identity_id: @identity.id }
 
-  notification = CalendarPushNotification.
-    with_apple({ custom_payload: data }
+  notification = CalendarPushNotification
+    .with_apple({ custom_payload: data })
     .with_google({ data: data })
     .new({ calendar_id: 123 })
 
