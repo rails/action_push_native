@@ -63,7 +63,7 @@ module ActionPush
       assert_equal({ category: "readable" }, notification.apns_payload_with_fallback)
       assert_equal({ data: { badge: "1" } }, notification.fcm_payload_with_fallback)
       assert_equal({ notification_id: 123 }, notification.context)
-      assert_equal({ person: "Jacopo", extras: nil }, notification.custom_payload)
+      assert_equal({ person: "Jacopo", extras: nil }, notification.data_with_fallback)
     end
 
     private
