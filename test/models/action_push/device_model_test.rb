@@ -37,5 +37,20 @@ module ActionPush
       end
       assert iphone.destroyed?
     end
+
+    test "customized TokenError handling" do
+      iphone = action_push_devices(:iphone).becomes(Device)
+      ActionPush::Service::Apns.any_instance.expects(:push).raises(TokenError)
+
+      assert_no_difference -> { ActionPush::Device.count } do
+        iphone.push(@notification)
+      end
+      assert_not iphone.destroyed?
+    end
+
+    private
+      class Device < ActionPush::Device
+        rescue_from(TokenError) { }
+      end
   end
 end
