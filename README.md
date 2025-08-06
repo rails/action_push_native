@@ -239,11 +239,19 @@ You can use a custom device model, as long as:
 2. It responds to the `token` and `platform` methods.
 3. It includes the `ActionPush::DeviceModel` module.
 
-By default when there is a Token error the device is destroyed, you can customize this behaviour by
-subclassing `ActionPush::Device` and adding a custom rescue logic:
+By default, when a token error occurs, the device is destroyed.
+You can customize this behavior by adding custom rescue logic in your device model:
 
 ```ruby
+class Device < ActionPush::Device
+  rescue_from ActionPush::TokenError do |error|
+    # Custom logic to handle token errors
+  end
+end
+
 class CustomDevice < ActionPush::Device
+  include ActionPush::DeviceModel
+
   rescue_from ActionPush::TokenError do |error|
     # Custom logic to handle token errors
   end
