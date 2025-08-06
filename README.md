@@ -1,6 +1,6 @@
 # Action Push
 
-Action Push is a Rails push notification gem for mobile platforms, supporting FCM (Android) and APNs (iOS).
+Action Push is a Rails push notification gem for mobile platforms, supporting APNs (Apple) and FCM (Android).
 
 ## Installation
 
@@ -16,60 +16,11 @@ This will install the gem and run the necessary migrations to set up the databas
 
 The installation will create:
 
-- `config/push.yml` file with a default configuration for Apple
-and Android.
-- `app/models/application_push_notification.rb` application model to send push notifications.
-- `app/jobs/application_push_notification_job.rb` application job to process the notifications.
+- `app/models/application_push_notification.rb`
+- `app/jobs/application_push_notification_job.rb`
+- `config/push.yml`
 
-Example `config/push.yml`:
-
-```yaml
-shared:
-  report_job_retries: true
-  log_job_arguments: true
-  applications:
-    ios:
-      service: apns
-      # Token auth params
-      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-      key_id: your_key_id
-      encryption_key: your_apple_encryption_key
-      team_id: your_apple_team_id
-      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
-      topic: your.bundle.identifier
-
-      # Set this to the number of threads used to process notifications (Default: 5).
-      # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
-      connection_pool_size: 10
-      request_timeout: 60
-
-      # Decide when to connect to APNs development server.
-      # Please note that anything built directly from Xcode and loaded on your phone will have
-      # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
-      # will be considered as PRODUCTION environment.
-      connect_to_development_server: <%= Rails.env.development? %>
-    android:
-      service: fcm
-      # Your Firebase project service account credentials
-      # See https://firebase.google.com/docs/cloud-messaging/auth-server
-      encryption_key: your_service_account_json_file
-      # Firebase project_id
-      project_id: your_project_id
-
-      request_timeout: 30
-```
-
-To send push notifications, you need to set up credentials for each configured application.
-You can add as many applications as you like, as long as each one is configured
-with a supported notification service (FCM or APNs).
-
-The following options are supported:
-
-- `log_job_arguments`: Whether to log job arguments when sending notifications. Defaults to `false`.
-- `report_job_retries`: Whether to report job retries in the logs. Defaults to `false`.
-- `applications`: A hash of applications to configure. See the example format in `config/push.yml`.
-
-Example `app/models/application_push_notification.rb`:
+`app/models/application_push_notification.rb`:
 
 ```ruby
 class ApplicationPushNotification < ActionPush::Notification
@@ -77,26 +28,84 @@ class ApplicationPushNotification < ActionPush::Notification
   queue_as :realtime
 
   # Controls whether push notifications are enabled
-  # self.enabled = true
+  self.enabled = Rails.env.production?
 
   # Define a custom callback to modify or abort the notification before it is sent
-  # before_delivery do |notification|
-  #   throw :abort if Notification.find(notification.context[:notification_id]).expired?
-  # end
+  before_delivery do |notification|
+    throw :abort if Notification.find(notification.context[:notification_id]).expired?
+  end
 end
 ```
 
-Example `app/jobs/application_push_notification_job.rb`:
+This class is used to create and send push notifications. You can customize it by subclassing or
+change the application defaults by editing it directly.
+
+`app/jobs/application_push_notification_job.rb`:
 
 ```ruby
 class ApplicationPushNotificationJob < ActionPush::NotificationJob
-  # Enable logging job arguments (`false` by default)
-  # self.log_arguments = true
+  # Enable logging job arguments (false by default)
+  self.log_arguments = true
 
-  # Report job retries via the `Rails.error` reporter
+  # Report job retries via the `Rails.error` reporter (false by default)
   self.report_job_retries = true
 end
 ```
+
+This is the job class that processes the push notifications. You can customize it by editing it
+directly in your application.
+
+`config/push.yml`:
+
+```yaml
+shared:
+  apple:
+    # When custom settings are needed for individual notification types,
+    # start by defining a shared `application` configuration. Then, optionally add
+    # specific settings for each notification class (e.g., `calendar`, `email`).
+    # These settings will be merged with the base `application` configuration.
+    # The `application` settings also apply to the `ApplicationPushNotification` class.
+    application:
+      # Token auth params
+      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+      key_id: your_key_id
+      encryption_key: your_apple_encryption_key
+
+      team_id: your_apple_team_id
+      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
+      topic: your.bundle.identifier
+
+      # Set this to the number of threads used to process notifications (Default: 5).
+      # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
+      # connection_pool_size: 5
+      # request_timeout: 30
+
+      # Decide when to connect to APNs development server.
+      # Please note that anything built directly from Xcode and loaded on your phone will have
+      # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
+      # will be considered as PRODUCTION environment.
+      # connect_to_development_server: <%# Rails.env.development? %>
+    calendar:
+      # Special configuration for CalendarPushNotification
+      timeout: 30
+    email:
+      # If not inferred, the Class name can be specified directly
+      # class_name: "CustomEmailPushNotification"
+  google:
+    # Your Firebase project service account credentials
+    # See https://firebase.google.com/docs/cloud-messaging/auth-server
+    encryption_key: your_service_account_json_file
+
+    # Firebase project_id
+    project_id: your_project_id
+
+    # request_timeout: 15
+```
+
+This file contains the configuration for the push notification services you want to use.
+The push notification services supported are `apple` (APNs) and `google` (FCM).
+You can use a shared configuration for all the Notification classes, or define specific settings
+for each class (e.g., `calendar`, `email`).
 
 ## Usage
 
@@ -130,30 +139,44 @@ notification.deliver_to(device)
 It is recommended to send notifications asynchronously using `deliver_later_to`.
 This ensures error handling and retry logic are in place, and avoids blocking your application's execution.
 
-### Custom service Payload
+### Custom platform Payload
 
-You can configure a custom service payload to be sent with the notification. This is useful when you
-need to send additional data that is specific to the service you are using (e.g., FCM or APNs).
+You can configure custom platform payload to be sent with the notification. This is useful when you
+need to send additional data that is specific to the platform you are using.
+
+You can use `with_apple` for Apple and `with_google` for Google:
 
 ```ruby
-ActionPush::Notification.new \
-  service_payload: {
-    apns: { category: "observable", content_available: 1 }
-  },
-  custom_payload: {
-    calendar_id: @calendar.id,
-    identity_id: @identity.id
-  }
+apple_notification = ActionPush::Notification
+  .with_apple(category: "observable")
+  .new(title: "Hi Apple")
+
+google_notification = ActionPush::Notification
+  .with_google({ data: { badge: 1 } })
+  .new(title: "Hi Google")
 ```
 
-This will configure APNs to send a silent notification with the `observable` category.
-The valid keys are `apns` for Apple Push Notification Service and `fcm` for Firebase Cloud
-Messaging.
+# Silent Notifications
+
+You can create a silent notification via the `silent` method:
+
+```ruby
+notification = Notification.silent.
+  .with_apple({ custom_payload: { id: 1 } })
+  .with_google({ data: { id: 1 } })
+```
+
+This will create a silent notification for both Apple and Google platforms and sets an application
+data field of `{ id: 1 }` for both platforms. Silent push notification must not contain any attribute which would trigger
+a visual notification on the device, such as `title`, `body`, `badge`, etc.
 
 ### `before_delivery` callback
 
-You can specify custom `delivery` callbacks to modify or cancel the notification before it is sent
-by subclassing `ApplicationPushNotification` and defining a `before_delivery` block:
+You can specify custom `delivery` callbacks to modify or cancel the notification
+by defining a custom `before_delivery` block.
+The callback has access to the `notification` object and can throw `:abort` to cancel the delivery.
+You can pass additional context data to the notification, by adding any extra arguments to the
+constructor:
 
 ```ruby
   class CalendarPushNotification < ApplicationPushNotification
@@ -162,14 +185,12 @@ by subclassing `ApplicationPushNotification` and defining a `before_delivery` bl
     end
   end
 
-  notification = CalendarPushNotification.new \
-   custom_payload: {
-     calendar_id: @calendar.id,
-     identity_id: @identity.id
-   },
-   context: {
-     calendar_id: @calendar.id
-   }
+  data = { calendar_id: @calendar.id, identity_id: @identity.id }
+
+  notification = CalendarPushNotification.
+    with_apple({ custom_payload: data }
+    .with_google({ data: data })
+    .new({ calendar_id: 123 })
 
   notification.deliver_later_to(device)
 ```
@@ -184,7 +205,7 @@ A Device can be associated with any record in your application via the `owner` p
   Device.create! \
     name: "iPhone 16",
     token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
-    application: "ios"
+    platform: "apple"
     owner: user
 ```
 
@@ -193,8 +214,8 @@ A Device can be associated with any record in your application via the `owner` p
 You can use a custom device model, as long as:
 
 1. It can be serialized and deserialized by `ActiveJob`.
-2. It responds to the `token` and `application` methods.
-3. It implements an `on_token_error` callback to handle token errors. By default, device models handle this [by destroying the record](https://github.com/basecamp/actionpush/blob/main/app/models/action_push/device.rb#L10-L12).
+2. It responds to the `token` and `platform` methods.
+3. It includes the `ActionPush::DeviceModel` module.
 
 ### `ActionPush::Notification` attributes
 
@@ -205,10 +226,15 @@ You can use a custom device model, as long as:
 | :badge           | The badge number to display on the app icon
 | :thread_id       | The thread identifier for grouping notifications.
 | :sound           | The sound to play when the notification is received.
-| :high_priority   | Whether the notification should be sent with high priority (default: true). For silent notifications is recommended to set this to `false` to avoid [deprioritization or notification delegation](https://firebase.google.com/docs/cloud-messaging/android/message-priority#deprioritize).
-| :service_payload | The service-specific payload for the notification. Valid subkeys are `apns` for Apple Push Notification Service and `fcm` for Firebase Cloud Messaging.
-| :custom_payload  | Custom payload data to be sent with the notification.
-| :context  | Hash of additional context data that won't be sent to the device, but can be used in callbacks |
+| :high_priority   | Whether the notification should be sent with high priority (default: true).
+
+### Factory methods
+
+| Name           | Description
+|------------------|------------
+| :with_apple           | Set the Apple-specific payload for the notification.
+| :with_google          | Set the Google-specific payload for the notification.
+| :silent               | Create a silent notification that does not trigger a visual alert on the device.
 
 ## License
 
