@@ -227,7 +227,7 @@ A Device can be associated with any record in your application via the `owner` p
   Device.create! \
     name: "iPhone 16",
     token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
-    platform: "apple"
+    platform: "apple",
     owner: user
 ```
 
