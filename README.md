@@ -175,8 +175,8 @@ notification = ApplicationPushNotification
   .new(title: "Hello world!", body: "Welcome to Action Push", badge: 1)
 ```
 
-This will unset the `notification_count` (`badge`) field in the Google payload, while keeping the `title`,
-`body`.
+This will unset the `notification_count` (`badge`) field in the Google payload, while keeping `title`
+and `body`.
 
 ### Silent Notifications
 
@@ -184,8 +184,7 @@ You can create a silent notification via the `silent` method:
 
 ```ruby
 notification = Notification.silent
-  .with_apple({ custom_payload: { id: 1 } })
-  .with_google({ data: { id: 1 } })
+  .with_data({ id: 1 })
 ```
 
 This will create a silent notification for both Apple and Google platforms and sets an application
@@ -194,11 +193,10 @@ a visual notification on the device, such as `title`, `body`, `badge`, etc.
 
 ### `before_delivery` callback
 
-You can specify custom `delivery` callbacks to modify or cancel the notification
-by defining a custom `before_delivery` block.
-The callback has access to the `notification` object and can throw `:abort` to cancel the delivery.
-You can pass additional context data to the notification, by adding any extra arguments to the
-constructor:
+You can specify Active Record like callbacks for the `delivery` method. For example, you can modify
+or cancel the notification by specifying a custom `before_delivery` block. The callback has access
+to the `notification` object. You can also pass additional context data to the notification
+by adding extra arguments to the notification constructor:
 
 ```ruby
   class CalendarPushNotification < ApplicationPushNotification
