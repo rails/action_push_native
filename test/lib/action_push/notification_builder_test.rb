@@ -5,7 +5,7 @@ module ActionPush
     setup { @notification = ActionPush::Notification.new(title: "Hi!") }
 
     test "silent notification" do
-      notification = @notification.silent
+      notification = @notification.silent.new
       assert_equal false, notification.high_priority
       assert_equal({ content_available: 1 }, notification.apns_payload)
       assert_nil @notification.apns_payload

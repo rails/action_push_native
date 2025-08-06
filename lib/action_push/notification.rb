@@ -32,8 +32,8 @@ module ActionPush
     #   thread_id - The thread ID for grouping notifications
     #   sound - The sound to play when the notification is received
     #   high_priority - Whether to send the notification with high priority (default: true).
-    #                   For silent notifications is recommended to set this to false.
-    #   service_payload, custom_payload, context - Legacy fields to handle in-flight jobs deserialization.
+    #                   For silent notifications is recommended to set this to false
+    #   service_payload, custom_payload, context - Legacy fields to handle in-flight jobs deserialization
     #
     #   Any extra attributes is set inside the `context` hash.
     def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, custom_payload: {}, context: {}, **new_context)
@@ -42,9 +42,11 @@ module ActionPush
       @badge = badge
       @thread_id = thread_id
       @sound = sound
-      @high_priority = high_priority
+      # Do not override @high_priority if it was already set earlier using .silent
+      @high_priority = high_priority if @high_priority.nil?
+      # Keep reading the legacy context field to handle in-flight jobs deserialization
       @context = context.presence || new_context
-      # Legacy fields to handle in-flight jobs deserialization.
+      # Legacy fields to handle in-flight jobs deserialization
       @service_payload = service_payload
       @custom_payload = custom_payload
     end
