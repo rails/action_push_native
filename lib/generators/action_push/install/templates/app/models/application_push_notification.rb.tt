@@ -3,7 +3,7 @@ class ApplicationPushNotification < ActionPush::Notification
   # queue_as :realtime
 
   # Controls whether push notifications are enabled
-  # self.enabled = true
+  # self.enabled = Rails.env.production?
 
   # Define a custom callback to modify or abort the notification before it is sent
   # before_delivery do |notification|
