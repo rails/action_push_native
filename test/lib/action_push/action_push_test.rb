@@ -4,6 +4,23 @@ class CalendarPushNotification < ApplicationPushNotification; end
 class CalendarCustomPushNotification < ApplicationPushNotification; end
 
 class ActionPushTest < ActiveSupport::TestCase
+  test "service_for" do
+    notification = CalendarPushNotification.new(title: "Hi")
+    stub_config("push_apple_calendar.yml")
+
+    service = ActionPush.service_for(action_push_devices(:iphone), notification)
+
+    assert_kind_of ActionPush::Service::Apns, service
+    expected_config = {
+      key_id: "calendar_key_id",
+      encryption_key: "your_apple_encryption_key",
+      team_id: "your_apple_team_id",
+      topic: "your.bundle.identifier",
+      timeout: 30
+    }
+    assert_equal expected_config, service.send(:config)
+  end
+
   test "config_for" do
     [ CalendarPushNotification, ApplicationPushNotification ].each do |notification_class|
       stub_config("push_apple.yml")

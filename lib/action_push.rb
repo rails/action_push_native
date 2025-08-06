@@ -25,9 +25,9 @@ module ActionPush
   class InternalServerError < StandardError; end
   class ServiceUnavailableError < StandardError; end
 
-  def self.service_for(device, notification_class)
+  def self.service_for(device, notification)
     platform = device.platform.to_sym
-    platform_config = config_for(platform, notification_class)
+    platform_config = config_for(platform, notification.class)
 
     case platform
     when :apple
