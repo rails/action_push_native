@@ -2,20 +2,7 @@ require "test_helper"
 
 module ActionPush
   class NotificationJobTest < ActiveSupport::TestCase
-    setup do
-      @notification_attributes = \
-        {
-          title: "Hi!",
-          body: "This is a push notification",
-          badge: 1,
-          thread_id: "12345",
-          sound: "default",
-          high_priority: false,
-          apns_payload: {},
-          fcm_payload: {},
-          data: {}
-        }
-    end
+    setup { @notification_attributes = { title: "Hi!", body: "This is a push notification" } }
 
     test "429 errors are retried with an exponential backoff delay" do
       device = action_push_devices(:iphone)

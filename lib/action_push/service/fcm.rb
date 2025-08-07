@@ -23,7 +23,7 @@ module ActionPush
           deep_compact({
             message: {
               token: notification.token,
-              data: stringify(notification.data),
+              data: notification.data ? stringify(notification.data) : {},
               android: {
                 notification: {
                   title: notification.title,
@@ -34,7 +34,7 @@ module ActionPush
                 collapse_key: notification.thread_id,
                 priority: notification.high_priority == true ? "high" : "normal"
               }
-            }.deep_merge(stringify_data(notification.fcm_payload))
+            }.deep_merge(notification.fcm_payload ? stringify_data(notification.fcm_payload) : {})
           })
         end
 
