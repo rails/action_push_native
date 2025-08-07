@@ -36,12 +36,15 @@ module ActionPush
     #   service_payload, custom_payload, context - Legacy fields to handle in-flight jobs deserialization
     #
     #   Any extra attributes is set inside the `context` hash.
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, service_payload: {}, custom_payload: {}, context: {}, **new_context)
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, apns_payload: nil, fcm_payload: nil, data: nil, service_payload: {}, custom_payload: {}, context: {}, **new_context)
       @title = title
       @body = body
       @badge = badge
       @thread_id = thread_id
       @sound = sound
+      @apns_payload = apns_payload if apns_payload
+      @fcm_payload = fcm_payload if fcm_payload
+      @data = data if data
       # Do not override @high_priority if it was already set earlier using .silent
       @high_priority = high_priority if @high_priority.nil?
       # Keep reading the legacy context field to handle in-flight jobs deserialization
