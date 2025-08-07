@@ -1,7 +1,7 @@
 require "test_helper"
 
 module ActionPush
-  class NotificationBuilderTest < ActiveSupport::TestCase
+  class Notification::BuilderTest < ActiveSupport::TestCase
     test "silent notification" do
       notification = ActionPush::Notification.silent.new(title: "Hi!")
       assert_equal false, notification.high_priority

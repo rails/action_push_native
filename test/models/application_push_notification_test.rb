@@ -6,8 +6,8 @@ class ApplicationPushNotificationTest < ActiveSupport::TestCase
 
     notification.deliver_later_to([ action_push_devices(:iphone), action_push_devices(:pixel9) ])
 
-    assert_enqueued_with job: ApplicationPushNotificationJob, args: [ "ApplicationPushNotification", notification.as_json, action_push_devices(:pixel9) ], queue: :realtime
-    assert_enqueued_with job: ApplicationPushNotificationJob, args: [ "ApplicationPushNotification", notification.as_json, action_push_devices(:iphone) ], queue: :realtime
+    assert_enqueued_with job: ApplicationPushNotificationJob, args: [ "ApplicationPushNotification", notification.serialize, action_push_devices(:pixel9) ], queue: :realtime
+    assert_enqueued_with job: ApplicationPushNotificationJob, args: [ "ApplicationPushNotification", notification.serialize, action_push_devices(:iphone) ], queue: :realtime
   end
 
   test "deliver_to before_delivery callback" do

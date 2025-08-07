@@ -6,7 +6,8 @@ module ActionPush
   # A notification that can be delivered to devices.
   class Notification
     extend ActiveModel::Callbacks
-    prepend NotificationBuilder
+    include Serializable
+    prepend Builder
 
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload, :data
     attr_accessor :context
@@ -51,32 +52,7 @@ module ActionPush
 
     def deliver_later_to(devices)
       Array(devices).each do |device|
-        ApplicationPushNotificationJob.set(queue: queue_name).perform_later(self.class.name, self.as_json, device)
-      end
-    end
-
-    def as_json
-      {
-        title: title,
-        body: body,
-        badge: badge,
-        thread_id: thread_id,
-        sound: sound,
-        high_priority: high_priority,
-        apns_payload: apns_payload,
-        fcm_payload: fcm_payload,
-        data: data,
-        **context
-      }.compact
-    end
-
-    def self.from_json(title:, body:, badge:, thread_id:, sound:, high_priority:, apns_payload: nil, fcm_payload: nil, data: nil, service_payload: nil, custom_payload: nil, context: nil, **new_context)
-      self.new(title:, body:, badge:, thread_id:, sound:, high_priority:).tap do |notification|
-        # Legacy fields backward compatibility to handle in-flight jobs.
-        notification.apns_payload = service_payload&.dig(:apns) || apns_payload
-        notification.fcm_payload  = service_payload&.dig(:fcm)  || fcm_payload
-        notification.data         = custom_payload   || data
-        notification.context      = context.presence || new_context
+        ApplicationPushNotificationJob.set(queue: queue_name).perform_later(self.class.name, self.serialize, device)
       end
     end
   end
