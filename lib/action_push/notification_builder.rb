@@ -3,9 +3,9 @@ module ActionPush
     extend ActiveSupport::Concern
 
     prepended do
-      class_attribute :default_apns_payload
-      class_attribute :default_fcm_payload
-      class_attribute :default_data
+      class_attribute :default_apns_payload, default: {}
+      class_attribute :default_fcm_payload, default: {}
+      class_attribute :default_data, default: {}
       class_attribute :default_high_priority
     end
 
@@ -20,22 +20,19 @@ module ActionPush
     class_methods do
       def with_data(data)
         new_class_preserving_name(self) do
-          self.default_data ||= {}
-          self.default_data.merge! data
+          self.default_data = self.default_data.merge data
         end
       end
 
       def with_apple(apple_data)
         new_class_preserving_name(self) do
-          self.default_apns_payload ||= {}
-          self.default_apns_payload.merge! apple_data
+          self.default_apns_payload = self.default_apns_payload.merge apple_data
         end
       end
 
       def with_google(google_data)
         new_class_preserving_name(self) do
-          self.default_fcm_payload ||= {}
-          self.default_fcm_payload.merge! google_data
+          self.default_fcm_payload = self.default_fcm_payload.merge google_data
         end
       end
 

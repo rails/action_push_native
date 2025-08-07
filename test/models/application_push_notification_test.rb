@@ -11,11 +11,11 @@ class ApplicationPushNotificationTest < ActiveSupport::TestCase
   end
 
   test "deliver_to before_delivery callback" do
-    notification = AbortablePushNotification.new(context: { abort_delivery: true })
+    notification = AbortablePushNotification.new(abort_delivery: true)
     ActionPush::Service::Apns.any_instance.expects(:push).never
     notification.deliver_to(action_push_devices(:iphone))
 
-    notification = AbortablePushNotification.new(context: { abort_delivery: false })
+    notification = AbortablePushNotification.new(abort_delivery: false)
     ActionPush::Service::Apns.any_instance.stubs(:push)
     notification.deliver_to(action_push_devices(:iphone))
   end

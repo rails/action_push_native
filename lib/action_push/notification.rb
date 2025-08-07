@@ -11,8 +11,6 @@ module ActionPush
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload, :data
     attr_accessor :context
     attr_accessor :token
-    # Legacy fields which will be removed in the next release.
-    attr_accessor :service_payload, :custom_payload
 
     class_attribute :queue_name, default: ActiveJob::Base.default_queue_name
 
@@ -33,38 +31,16 @@ module ActionPush
     #   sound - The sound to play when the notification is received
     #   high_priority - Whether to send the notification with high priority (default: true).
     #                   For silent notifications is recommended to set this to false
-    #   service_payload, custom_payload, context - Legacy fields to handle in-flight jobs deserialization
-    #
     #   Any extra attributes is set inside the `context` hash.
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, apns_payload: nil, fcm_payload: nil, data: nil, service_payload: {}, custom_payload: {}, context: {}, **new_context)
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, **context)
       @title = title
       @body = body
       @badge = badge
       @thread_id = thread_id
       @sound = sound
-      @apns_payload = apns_payload if apns_payload
-      @fcm_payload = fcm_payload if fcm_payload
-      @data = data if data
       # Do not override @high_priority if it was already set earlier using .silent
       @high_priority = high_priority if @high_priority.nil?
-      # Keep reading the legacy context field to handle in-flight jobs deserialization
-      @context = context.presence || new_context
-      # Legacy fields to handle in-flight jobs deserialization
-      @service_payload = service_payload
-      @custom_payload = custom_payload
-    end
-
-    # Backward compatibilty methods to handle in-flight jobs.
-    def apns_payload_with_fallback
-      apns_payload || service_payload[:apns] || {}
-    end
-
-    def fcm_payload_with_fallback
-       fcm_payload || service_payload[:fcm] || {}
-    end
-
-    def data_with_fallback
-      data || custom_payload || {}
+      @context = context
     end
 
     def deliver_to(device)
@@ -92,6 +68,16 @@ module ActionPush
         data: data,
         **context
       }.compact
+    end
+
+    def self.from_json(title:, body:, badge:, thread_id:, sound:, high_priority:, apns_payload: nil, fcm_payload: nil, data: nil, service_payload: nil, custom_payload: nil, context: nil, **new_context)
+      self.new(title:, body:, badge:, thread_id:, sound:, high_priority:).tap do |notification|
+        # Legacy fields backward compatibility to handle in-flight jobs.
+        notification.apns_payload = service_payload&.dig(:apns) || apns_payload
+        notification.fcm_payload  = service_payload&.dig(:fcm)  || fcm_payload
+        notification.data         = custom_payload   || data
+        notification.context      = context.presence || new_context
+      end
     end
   end
 end

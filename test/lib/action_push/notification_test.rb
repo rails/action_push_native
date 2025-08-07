@@ -36,19 +36,24 @@ module ActionPush
       @notification.apns_payload = { category: "readable" }
       @notification.fcm_payload = { notification: { collapse_key: "1" } }
       @notification.data = { badge: "1" }
-      assert_equal({ title: "Hi!",
-                     body: "This is a push notification",
-                     badge: 1,
-                     thread_id: "12345",
-                     sound: "default",
-                     high_priority: false,
-                     apns_payload: { category: "readable" },
-                     fcm_payload: { notification: { collapse_key: "1" } },
-                     data: { badge: "1" },
-                     calendar_id: 1 }, @notification.as_json)
+
+      expected = \
+        {
+          title: "Hi!",
+          body: "This is a push notification",
+          badge: 1,
+          thread_id: "12345",
+          sound: "default",
+          high_priority: false,
+          apns_payload: { category: "readable" },
+          fcm_payload: { notification: { collapse_key: "1" } },
+          data: { badge: "1" },
+          calendar_id: 1
+        }
+      assert_equal(expected, @notification.as_json)
     end
 
-    test "deserialization" do
+    test "from_json" do
       attributes = \
         {
           title: "Hi!",
@@ -62,7 +67,7 @@ module ActionPush
           data: { badge: "1" },
           calendar_id: 1
         }
-      notification = ActionPush::Notification.new(**attributes)
+      notification = ActionPush::Notification.from_json(**attributes)
 
       assert_equal "Hi!", notification.title
       assert_equal "This is a push notification", notification.body
@@ -76,21 +81,34 @@ module ActionPush
       assert_equal 1, notification.context[:calendar_id]
     end
 
-    test "legacy fields deserialization" do
-      attributes = {
-        service_payload: {
-          apns: { category: "readable" },
-          fcm:  { data: { badge: "1" } }
-        },
-        context: { notification_id: 123 },
-        custom_payload: { person: "Jacopo", extras: nil }
-      }
-      notification = ActionPush::Notification.new(**attributes)
+    test "from_json legacy fields" do
+      attributes = \
+        {
+          title: "Hi!",
+          body: "This is a push notification",
+          badge: 1,
+          thread_id: "12345",
+          sound: "default",
+          high_priority: false,
+          service_payload: {
+            apns: { category: "readable" },
+            fcm:  { data: { badge: "1" } }
+          },
+          custom_payload: { person: "Jacopo", extras: nil },
+          context: { notification_id: 123 }
+        }
+      notification = ActionPush::Notification.from_json(**attributes)
 
-      assert_equal({ category: "readable" }, notification.apns_payload_with_fallback)
-      assert_equal({ data: { badge: "1" } }, notification.fcm_payload_with_fallback)
+      assert_equal "Hi!", notification.title
+      assert_equal "This is a push notification", notification.body
+      assert_equal 1, notification.badge
+      assert_equal "12345", notification.thread_id
+      assert_equal "default", notification.sound
+      assert_equal false, notification.high_priority
+      assert_equal({ category: "readable" }, notification.apns_payload)
+      assert_equal({ data: { badge: "1" } }, notification.fcm_payload)
+      assert_equal({ person: "Jacopo", extras: nil }, notification.data)
       assert_equal({ notification_id: 123 }, notification.context)
-      assert_equal({ person: "Jacopo", extras: nil }, notification.data_with_fallback)
     end
 
     private

@@ -82,8 +82,8 @@ module ActionPush
             n.thread_id = notification.thread_id
             n.sound = notification.sound
             n.priority = notification.high_priority ? PRIORITIES[:high] : PRIORITIES[:normal]
-            n.custom_payload = notification.data_with_fallback
-            notification.apns_payload_with_fallback.each do |key, value|
+            n.custom_payload = notification.data
+            notification.apns_payload.each do |key, value|
               n.public_send("#{key.to_s.underscore}=", value)
             end
           end
