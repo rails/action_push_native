@@ -99,7 +99,7 @@ module ActionPush
           in [ nil, _ ]
             raise ActionPush::TimeoutError
           in [ "400", "BadDeviceToken" ]
-            raise ActionPush::DeviceTokenError, reason
+            raise ActionPush::TokenError, reason
           in [ "400", "DeviceTokenNotForTopic" ]
             raise ActionPush::BadDeviceTopicError, reason
           in [ "400", _ ]
@@ -109,7 +109,7 @@ module ActionPush
           in [ "404", _ ]
             raise ActionPush::NotFoundError, reason
           in [ "410", _ ]
-            raise ActionPush::ExpiredTokenError, reason
+            raise ActionPush::TokenError, reason
           in [ "413", _ ]
             raise ActionPush::PayloadTooLargeError, reason
           in [ "429", _ ]

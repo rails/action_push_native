@@ -2,29 +2,17 @@
 
 require "zeitwerk"
 require "action_push/engine"
+require "action_push/errors"
 require "net/http"
 require "apnotic"
 require "googleauth"
 
 loader= Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
 loader.ignore("#{__dir__}/generators")
+loader.ignore("#{__dir__}/action_push/errors.rb")
 loader.setup
 
 module ActionPush
-  class TimeoutError < StandardError; end
-  class BadRequestError < StandardError; end
-  class BadDeviceTopicError < StandardError; end
-  class ConnectionError < StandardError; end
-  class TokenError < StandardError; end
-  class DeviceTokenError < TokenError; end
-  class ForbiddenError < StandardError; end
-  class NotFoundError < StandardError; end
-  class ExpiredTokenError < TokenError; end
-  class PayloadTooLargeError < StandardError; end
-  class TooManyRequestsError < StandardError; end
-  class InternalServerError < StandardError; end
-  class ServiceUnavailableError < StandardError; end
-
   def self.service_for(device, notification)
     platform = device.platform.to_sym
     platform_config = config_for(platform, notification.class)

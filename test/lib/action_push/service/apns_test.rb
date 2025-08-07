@@ -45,7 +45,7 @@ module ActionPush
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400", body: { reason: "BadDeviceToken" }))
         Apns.connection_pools = { @config => connection_pool }
 
-        assert_raises ActionPush::DeviceTokenError do
+        assert_raises ActionPush::TokenError do
           @apns.push(@notification)
         end
       end
