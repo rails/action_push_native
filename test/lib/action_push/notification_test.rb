@@ -95,7 +95,7 @@ module ActionPush
 
     private
       def build_notification
-        ActionPush::Notification.new \
+        ActionPush::Notification.with_data(person: "Jacopo").new \
           title: "Hi!",
           body: "This is a push notification",
           badge: 1,
