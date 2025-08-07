@@ -56,7 +56,7 @@ module ActionPush
       end
 
       test "push fcm payload can be overridden" do
-        @notification = @notification.with_google(android: { collapse_key: "changed", notification: nil }, data: nil)
+        @notification.fcm_payload = { android: { collapse_key: "changed", notification: nil }, data: nil }
         payload = { message: { token: "123", android: { collapse_key: "changed", priority: "normal" } } }
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
           with(body: payload.to_json, headers: { "Authorization"=>"Bearer fake_access_token" }).

@@ -33,10 +33,9 @@ module ActionPush
     end
 
     test "as_json" do
-      @notification = @notification
-        .with_apple(category: "readable")
-        .with_google(notification: { collapse_key: "1" })
-        .with_data(badge: "1")
+      @notification.apns_payload = { category: "readable" }
+      @notification.fcm_payload = { notification: { collapse_key: "1" } }
+      @notification.data = { badge: "1" }
       assert_equal({ title: "Hi!",
                      body: "This is a push notification",
                      badge: 1,

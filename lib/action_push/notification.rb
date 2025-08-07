@@ -6,7 +6,7 @@ module ActionPush
   # A notification that can be delivered to devices.
   class Notification
     extend ActiveModel::Callbacks
-    include NotificationBuilder
+    prepend NotificationBuilder
 
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload, :data
     attr_accessor :context

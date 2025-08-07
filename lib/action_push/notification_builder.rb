@@ -1,54 +1,49 @@
 module ActionPush
   module NotificationBuilder
-      extend ActiveSupport::Concern
+    extend ActiveSupport::Concern
 
-      class_methods do
-        def with_data(data)
-          allocate.with_data(data)
-        end
+    prepended do
+      class_attribute :default_apns_payload
+      class_attribute :default_fcm_payload
+      class_attribute :default_data
+      class_attribute :default_high_priority
+    end
 
-        def with_apple(apple_data)
-          allocate.with_apple(apple_data)
-        end
+    def initialize(...)
+      @apns_payload = self.default_apns_payload
+      @fcm_payload = self.default_fcm_payload
+      @data = self.default_data
+      @high_priority = self.default_high_priority
+      super
+    end
 
-        def with_google(google_data)
-          allocate.with_google(google_data)
-        end
-
-        def silent
-          allocate.silent
-        end
-      end
-
-      def new(...)
-        self.tap { send(:initialize, ...) }
-      end
-
+    class_methods do
       def with_data(data)
-        dup.tap do |notification|
-          notification.data ||= {}
-          notification.data.merge!(data)
+        Class.new(self) do
+          self.default_data ||= {}
+          self.default_data.merge! data
         end
       end
 
       def with_apple(apple_data)
-        dup.tap do |notification|
-          notification.apns_payload ||= {}
-          notification.apns_payload.merge!(apple_data)
+        Class.new(self) do
+          self.default_apns_payload ||= {}
+          self.default_apns_payload.merge! apple_data
         end
       end
 
       def with_google(google_data)
-        dup.tap do |notification|
-          notification.fcm_payload ||= {}
-          notification.fcm_payload.merge!(google_data)
+        Class.new(self) do
+          self.default_fcm_payload ||= {}
+          self.default_fcm_payload.merge! google_data
         end
       end
 
       def silent
-        dup.tap do |notification|
-          notification.high_priority = false
+        Class.new(self) do
+          self.default_high_priority = false
         end.with_apple(content_available: 1)
       end
+    end
   end
 end
