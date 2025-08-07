@@ -19,7 +19,7 @@ module ActionPush::Notification::Serializable
   end
 
   class_methods do
-    def deserialize(title:, body:, badge:, thread_id:, sound:, high_priority:, apns_payload: nil, fcm_payload: nil, data: nil, service_payload: nil, custom_payload: nil, context: nil, **new_context)
+    def deserialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: nil, apns_payload: nil, fcm_payload: nil, data: nil, service_payload: nil, custom_payload: nil, context: nil, **new_context)
       self.new(title:, body:, badge:, thread_id:, sound:, high_priority:).tap do |notification|
         # Legacy fields backward compatibility to handle in-flight jobs.
         notification.apns_payload = service_payload&.dig(:apns) || apns_payload
