@@ -59,7 +59,7 @@ module ActionPush
         notification_class = Notification
       end
 
-      notification_class.constantize.new(**notification_attributes).deliver_to(device)
+      notification_class.constantize.deserialize(**notification_attributes).deliver_to(device)
     end
   end
 end

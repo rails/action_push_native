@@ -2,12 +2,27 @@ require "test_helper"
 
 module ActionPush
   class NotificationJobTest < ActiveSupport::TestCase
+    setup do
+      @notification_attributes = \
+        {
+          title: "Hi!",
+          body: "This is a push notification",
+          badge: 1,
+          thread_id: "12345",
+          sound: "default",
+          high_priority: false,
+          apns_payload: {},
+          fcm_payload: {},
+          data: {}
+        }
+    end
+
     test "429 errors are retried with an exponential backoff delay" do
       device = action_push_devices(:iphone)
       Notification.any_instance.stubs(:deliver_to).raises(TooManyRequestsError)
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationJob do
-        ActionPush::NotificationJob.perform_later("ApplicationPushNotification", {}, device)
+        ActionPush::NotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
       end
 
       [ 1, 2, 4, 8, 16 ].each do |minutes|
@@ -16,7 +31,7 @@ module ActionPush
       end
 
       Notification.any_instance.stubs(:deliver_to)
-      ActionPush::NotificationJob.perform_now("ApplicationPushNotification", {}, device)
+      ActionPush::NotificationJob.perform_now("ApplicationPushNotification", @notification_attributes, device)
       perform_enqueued_jobs only: ActionPush::NotificationJob
       assert_enqueued_jobs 0, only: ActionPush::NotificationJob
     end
@@ -26,7 +41,7 @@ module ActionPush
       Notification.any_instance.stubs(:deliver_to).raises(BadDeviceTopicError)
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationJob do
-        ActionPush::NotificationJob.perform_later("ApplicationPushNotification", {}, device)
+        ActionPush::NotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
       end
       perform_enqueued_jobs only: ActionPush::NotificationJob
       assert_enqueued_jobs 0, only: ActionPush::NotificationJob
@@ -38,7 +53,7 @@ module ActionPush
       ActionPush::Service::Fcm.any_instance.stubs(:access_token).returns("fake_access_token")
 
       assert_enqueued_jobs 1, only: ActionPush::NotificationJob do
-        ActionPush::NotificationJob.perform_later("ApplicationPushNotification", {}, device)
+        ActionPush::NotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
       end
       perform_enqueued_jobs only: ActionPush::NotificationJob
       assert_enqueued_jobs 1, only: ActionPush::NotificationJob
