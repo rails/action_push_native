@@ -241,6 +241,28 @@ A Device can be associated with any record in your application via the `owner` p
     owner: user
 ```
 
+### Using a custom Device model
+
+If using the default `ApplicationPushDevice` model does not fit your needs, you can create a custom
+device model, as long as:
+
+1. It can be serialized and deserialized by `ActiveJob`.
+2. It responds to the `token` and `platform` methods.
+3. It implements a `push` method like this:
+
+```ruby
+class CustomDevice
+  # Your custom device attributes and methods...
+
+  def push(notification)
+    notification.token = token
+    ActionPush.service_for(platform, notification).push(notification)
+  rescue ActionPush::TokenError => error
+    # Custom token error handling
+  end
+end
+```
+
 ### `ActionPush::Notification` attributes
 
 | Name           | Description
