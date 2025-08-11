@@ -117,8 +117,8 @@ shared:
 
 This file contains the configuration for the push notification services you want to use.
 The push notification services supported are `apple` (APNs) and `google` (FCM).
-You can use a shared configuration for all the Notification classes, or define specific settings
-for each class (e.g., `calendar`, `email`).
+If you have multiple apps (e.g., `calendar`, `email`) you can define a base `application`
+configuration and extend it with specific settings for each app.
 
 ## Usage
 
