@@ -12,6 +12,8 @@ shared:
     # Set this to the number of threads used to process notifications (Default: 5).
     # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
     # connection_pool_size: 5
+
+    # Change the request timeout (Default: 30).
     request_timeout: 60
 
     # Decide when to connect to APNs development server.
@@ -19,6 +21,7 @@ shared:
     # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
     # will be considered as PRODUCTION environment.
     # connect_to_development_server: <%# Rails.env.development? %>
+
   google:
     # Your Firebase project service account credentials
     # See https://firebase.google.com/docs/cloud-messaging/auth-server
@@ -27,4 +30,5 @@ shared:
     # Firebase project_id
     project_id: your_project_id
 
-    # request_timeout: 15
+    # Change the request timeout (Default: 15).
+    # request_timeout: 30

@@ -4,7 +4,7 @@ Action Push is a Rails push notification gem for mobile platforms, supporting AP
 
 ## Installation
 
-```ruby
+```bash
 1. bundle add actionpush
 2. bin/rails g action_push:install
 3. bin/rails action_push:install:migrations
@@ -39,8 +39,8 @@ class ApplicationPushNotification < ActionPush::Notification
 end
 ```
 
-This class is used to create and send push notifications. You can customize it by subclassing or
-change the application defaults by editing it directly.
+Used to create and send push notifications. You can customize it by subclassing or
+you can change the application defaults by editing it directly.
 
 `app/jobs/application_push_notification_job.rb`:
 
@@ -54,7 +54,7 @@ class ApplicationPushNotificationJob < ActionPush::NotificationJob
 end
 ```
 
-This is the job class that processes the push notifications. You can customize it by editing it
+Job class that processes the push notifications. You can customize it by editing it
 directly in your application.
 
 `app/models/application_push_device.rb`:
@@ -66,45 +66,35 @@ class ApplicationPushDevice < ActionPush::Device
 end
 ```
 
-This class is used to represent a push notification device in your application. You can customize it by editing it
-directly in your application.
+Represent a push notification device. You can customize it by editing it directly in your application.
 
 `config/push.yml`:
 
 ```yaml
 shared:
   apple:
-    # When custom settings are needed for individual notification types,
-    # start by defining a shared `application` configuration. Then, optionally add
-    # specific settings for each notification class (e.g., `calendar`, `email`).
-    # These settings will be merged with the base `application` configuration.
-    # The `application` settings also apply to the `ApplicationPushNotification` class.
-    application:
-      # Token auth params
-      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-      key_id: your_key_id
-      encryption_key: your_apple_encryption_key
+    # Token auth params
+    # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+    key_id: your_key_id
+    encryption_key: your_apple_encryption_key
 
-      team_id: your_apple_team_id
-      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
-      topic: your.bundle.identifier
+    team_id: your_apple_team_id
+    # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
+    topic: your.bundle.identifier
 
-      # Set this to the number of threads used to process notifications (Default: 5).
-      # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
-      # connection_pool_size: 5
-      # request_timeout: 60
+    # Set this to the number of threads used to process notifications (Default: 5).
+    # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
+    # connection_pool_size: 5
 
-      # Decide when to connect to APNs development server.
-      # Please note that anything built directly from Xcode and loaded on your phone will have
-      # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
-      # will be considered as PRODUCTION environment.
-      # connect_to_development_server: <%# Rails.env.development? %>
-    calendar:
-      # Special configuration for CalendarPushNotification
-      request_timeout: 30
-    email:
-      # If not inferred, the Class name can be specified directly
-      # class_name: "CustomEmailPushNotification"
+    # Change the request timeout (Default: 30).
+    # request_timeout: 60
+
+    # Decide when to connect to APNs development server.
+    # Please note that anything built directly from Xcode and loaded on your phone will have
+    # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
+    # will be considered as PRODUCTION environment.
+    # connect_to_development_server: <%# Rails.env.development? %>
+
   google:
     # Your Firebase project service account credentials
     # See https://firebase.google.com/docs/cloud-messaging/auth-server
@@ -113,13 +103,78 @@ shared:
     # Firebase project_id
     project_id: your_project_id
 
-    # request_timeout: 15
+    # Change the request timeout (Default: 15).
+    # request_timeout: 30
 ```
 
 This file contains the configuration for the push notification services you want to use.
 The push notification services supported are `apple` (APNs) and `google` (FCM).
-If you have multiple apps (e.g., `calendar`, `email`) you can define a base `application`
-configuration and extend it with specific settings for each app.
+If you're configuring more than one app, see the section [Configuring multiple apps](#configuring-multiple-apps) below.
+
+### Configuring multiple apps
+
+If you need to connect to multiple apps, you can configure them in the `config/push.yml` file:
+
+First, you need to specify an `application` key which is the base configuration for all apps.
+The base configuration will be merged with the specific configuration for each app.
+Then, you can add specific configurations for each app by using the snake-case version of the Notification class name as
+key. If you want to use a different class name for the notification, you can specify it
+using the `class_name` option.
+
+In the example below we are configuring two apps: `calendar` and `email` using respectively the
+`CalendarPushNotification` and `CustomEmailPushNotification` notification classes for both Apple and Google
+platforms.
+
+```yaml
+shared:
+  apple:
+    application:
+      # Token auth params
+      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+      key_id: your_key_id
+      encryption_key: your_apple_encryption_key
+
+      team_id: your_apple_team_id
+
+    calendar:
+      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
+      topic: calendar.bundle.identifier
+
+    email:
+      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
+      topic: email.bundle.identifier
+      # If not inferred, the Class name can be specified directly
+      class_name: "CustomEmailPushNotification"
+
+  google:
+    application:
+      # Your Firebase project service account credentials
+      # See https://firebase.google.com/docs/cloud-messaging/auth-server
+      encryption_key: your_service_account_json_file
+
+    calendar:
+      # Firebase project_id
+      project_id: calendar_project_id
+    email:
+      # Firebase project_id
+      project_id: email_project_id
+      # If not inferred, the Class name can be specified directly
+      class_name: "CustomEmailPushNotification"
+```
+
+Both `CalendarPushNotification` and `CustomEmailPushNotification` need to inherit from the
+`ApplicationPushNotification` class:
+
+```ruby
+class CalendarPushNotification < ApplicationPushNotification
+  # Custom notification logic for calendar app
+end
+
+class CustomEmailPushNotification < ApplicationPushNotification
+  # Custom notification logic for email app
+end
+```
+
 
 ## Usage
 
@@ -204,6 +259,19 @@ This will create a silent notification for both Apple and Google platforms and s
 data field of `{ id: 1 }` for both platforms. Silent push notification must not contain any attribute which would trigger
 a visual notification on the device, such as `title`, `body`, `badge`, etc.
 
+### Linking a Device to a Record
+
+A Device can be associated with any record in your application via the `owner` polymorphic association:
+
+```ruby
+  user = User.find_by_email_address("jacopo@37signals.com")
+
+  ApplicationPushDevice.create! \
+    name: "iPhone 16",
+    token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
+    platform: "apple",
+    owner: user
+```
 ### `before_delivery` callback
 
 You can specify Active Record like callbacks for the `delivery` method. For example, you can modify
@@ -228,20 +296,6 @@ by adding extra arguments to the notification constructor:
   notification.deliver_later_to(device)
 ```
 
-### Linking a Device to a Record
-
-A Device can be associated with any record in your application via the `owner` polymorphic association:
-
-```ruby
-  user = User.find_by_email_address("jacopo@37signals.com")
-
-  ApplicationPushDevice.create! \
-    name: "iPhone 16",
-    token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
-    platform: "apple",
-    owner: user
-```
-
 ### Using a custom Device model
 
 If using the default `ApplicationPushDevice` model does not fit your needs, you can create a custom
@@ -264,7 +318,7 @@ class CustomDevice
 end
 ```
 
-### `ActionPush::Notification` attributes
+## `ActionPush::Notification` attributes
 
 | Name           | Description
 |------------------|------------

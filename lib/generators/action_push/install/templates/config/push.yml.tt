@@ -1,36 +1,27 @@
 shared:
   apple:
-    # When custom settings are needed for individual notification types,
-    # start by defining a shared `application` configuration. Then, optionally add
-    # specific settings for each notification class (e.g., `calendar`, `email`).
-    # These settings will be merged with the base `application` configuration.
-    # The `application` settings also apply to the `ApplicationPushNotification` class.
-    application:
-      # Token auth params
-      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-      key_id: your_key_id
-      encryption_key: your_apple_encryption_key
+    # Token auth params
+    # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+    key_id: your_key_id
+    encryption_key: your_apple_encryption_key
 
-      team_id: your_apple_team_id
-      # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
-      topic: your.bundle.identifier
+    team_id: your_apple_team_id
+    # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
+    topic: your.bundle.identifier
 
-      # Set this to the number of threads used to process notifications (Default: 5).
-      # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
-      # connection_pool_size: 5
-      # request_timeout: 60
+    # Set this to the number of threads used to process notifications (Default: 5).
+    # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
+    # connection_pool_size: 5
 
-      # Decide when to connect to APNs development server.
-      # Please note that anything built directly from Xcode and loaded on your phone will have
-      # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
-      # will be considered as PRODUCTION environment.
-      # connect_to_development_server: <%# Rails.env.development? %>
-    # calendar:
-    #   Special configuration for CalendarPushNotification
-    #   timeout: 30
-    # email:
-    #   If not inferred, the Class name can be specified directly
-    #   class_name: "CustomEmailPushNotification"
+    # Change the request timeout (Default: 30).
+    # request_timeout: 60
+
+    # Decide when to connect to APNs development server.
+    # Please note that anything built directly from Xcode and loaded on your phone will have
+    # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
+    # will be considered as PRODUCTION environment.
+    # connect_to_development_server: <%# Rails.env.development? %>
+
   google:
     # Your Firebase project service account credentials
     # See https://firebase.google.com/docs/cloud-messaging/auth-server
@@ -39,4 +30,5 @@ shared:
     # Firebase project_id
     project_id: your_project_id
 
-    # request_timeout: 15
+    # Change the request timeout (Default: 15).
+    # request_timeout: 30
