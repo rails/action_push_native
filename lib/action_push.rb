@@ -13,11 +13,10 @@ loader.ignore("#{__dir__}/action_push/errors.rb")
 loader.setup
 
 module ActionPush
-  def self.service_for(device, notification)
-    platform = device.platform.to_sym
+  def self.service_for(platform, notification)
     platform_config = config_for(platform, notification.class)
 
-    case platform
+    case platform.to_sym
     when :apple
       Service::Apns.new(platform_config)
     when :google
@@ -28,8 +27,8 @@ module ActionPush
   end
 
   def self.config_for(platform, notification_class)
-    platform_config = config[platform]
-    raise "ActionPush: #{platform}' Platform is not configured" unless platform_config.present?
+    platform_config = config[platform.to_sym]
+    raise "ActionPush: '#{platform}' Platform is not configured" unless platform_config.present?
 
     if application_config = platform_config.delete(:application)
       application_config.merge(notification_config_for(platform_config, notification_class))

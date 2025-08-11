@@ -12,7 +12,7 @@ module ActionPush
 
     def push(notification)
        notification.token = token
-       ActionPush.service_for(self, notification).push(notification)
+       ActionPush.service_for(self.platform, notification).push(notification)
     rescue => error
       rescue_with_handler(error) || raise
     end

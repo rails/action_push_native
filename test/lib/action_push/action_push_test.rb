@@ -8,7 +8,7 @@ class ActionPushTest < ActiveSupport::TestCase
     notification = CalendarPushNotification.new(title: "Hi")
     stub_config("push_apple_calendar.yml")
 
-    service = ActionPush.service_for(action_push_devices(:iphone), notification)
+    service = ActionPush.service_for(action_push_devices(:iphone).platform, notification)
 
     assert_kind_of ActionPush::Service::Apns, service
     expected_config = {
