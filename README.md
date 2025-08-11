@@ -197,7 +197,7 @@ and `body`.
 You can create a silent notification via the `silent` method:
 
 ```ruby
-notification = Notification.silent.with_data({ id: 1 })
+notification = ApplicationPushNotification.silent.with_data({ id: 1 })
 ```
 
 This will create a silent notification for both Apple and Google platforms and sets an application
