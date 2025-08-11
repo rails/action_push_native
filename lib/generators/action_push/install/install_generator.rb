@@ -9,8 +9,4 @@ class ActionPush::InstallGenerator < Rails::Generators::Base
     template "app/models/application_push_device.rb"
     template "app/jobs/application_push_notification_job.rb"
   end
-
-  def copy_migrations
-    rails_command "action_push:install:migrations"
-  end
 end

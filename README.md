@@ -6,8 +6,9 @@ Action Push is a Rails push notification gem for mobile platforms, supporting AP
 
 ```ruby
 1. bundle add actionpush
-2. bin/rails action_push:install
-3. bin/rails db:migrate
+2. bin/rails g action_push:install
+3. bin/rails action_push:install:migrations
+4. bin/rails db:migrate
 ```
 
 This will install the gem and run the necessary migrations to set up the database.
