@@ -118,11 +118,10 @@ If you need to connect to multiple apps, you can configure them in the `config/p
 First, you need to specify an `application` key which is the base configuration for all apps.
 The base configuration will be merged with the specific configuration for each app.
 Then, you can add specific configurations for each app by using the snake-case version of the Notification class name as
-key. If you want to use a different class name for the notification, you can specify it
-using the `class_name` option.
+key after removing the `PushNotification` suffix (if present). Module namespaces are ignored, so `Calendar::PushNotification` and `CalendarPushNotification` both map to the same key: `calendar`.
 
 In the example below we are configuring two apps: `calendar` and `email` using respectively the
-`CalendarPushNotification` and `CustomEmailPushNotification` notification classes for both Apple and Google
+`CalendarPushNotification` and `EmailPushNotification` notification classes for both Apple and Google
 platforms.
 
 ```yaml
@@ -146,8 +145,6 @@ shared:
       encryption_key: email_apple_encryption_key
       # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
       topic: email.bundle.identifier
-      # If not inferred, the Class name can be specified directly
-      class_name: "CustomEmailPushNotification"
 
   google:
     application:
@@ -161,11 +158,9 @@ shared:
     email:
       # Firebase project_id
       project_id: email_project_id
-      # If not inferred, the Class name can be specified directly
-      class_name: "CustomEmailPushNotification"
 ```
 
-Both `CalendarPushNotification` and `CustomEmailPushNotification` need to inherit from the
+Both `CalendarPushNotification` and `EmailPushNotification` need to inherit from the
 `ApplicationPushNotification` class:
 
 ```ruby
@@ -173,7 +168,7 @@ class CalendarPushNotification < ApplicationPushNotification
   # Custom notification logic for calendar app
 end
 
-class CustomEmailPushNotification < ApplicationPushNotification
+class EmailPushNotification < ApplicationPushNotification
   # Custom notification logic for email app
 end
 ```

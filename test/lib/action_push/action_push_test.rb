@@ -1,11 +1,13 @@
 require "test_helper"
 
-class CalendarPushNotification < ApplicationPushNotification; end
-class CalendarCustomPushNotification < ApplicationPushNotification; end
+module Calendar
+  class PushNotification < ApplicationPushNotification; end
+  class CustomPushNotification < ApplicationPushNotification; end
+end
 
 class ActionPushTest < ActiveSupport::TestCase
   test "service_for" do
-    notification = CalendarPushNotification.new(title: "Hi")
+    notification = Calendar::PushNotification.new(title: "Hi")
     stub_config("push_apple_calendar.yml")
 
     service = ActionPush.service_for(action_push_devices(:iphone).platform, notification)
@@ -22,7 +24,7 @@ class ActionPushTest < ActiveSupport::TestCase
   end
 
   test "config_for" do
-    [ CalendarPushNotification, ApplicationPushNotification ].each do |notification_class|
+    [ Calendar::PushNotification, ApplicationPushNotification ].each do |notification_class|
       stub_config("push_apple.yml")
       config = ActionPush.config_for :apple, notification_class
       expected_config = {
@@ -47,7 +49,7 @@ class ActionPushTest < ActiveSupport::TestCase
     assert_equal expected_config, config
 
     stub_config("push_apple_calendar.yml")
-    config = ActionPush.config_for :apple, CalendarPushNotification
+    config = ActionPush.config_for :apple, Calendar::PushNotification
     expected_config = {
       key_id: "calendar_key_id",
       encryption_key: "your_apple_encryption_key",
@@ -58,7 +60,7 @@ class ActionPushTest < ActiveSupport::TestCase
     assert_equal expected_config, config
 
     stub_config("push_apple_calendar.yml")
-    config = ActionPush.config_for :apple, CalendarCustomPushNotification
+    config = ActionPush.config_for :apple, Calendar::CustomPushNotification
     expected_config = {
       key_id: "your_key_id",
       encryption_key: "your_apple_encryption_key",

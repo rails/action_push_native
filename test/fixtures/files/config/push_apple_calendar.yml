@@ -8,5 +8,4 @@ apple:
     key_id: calendar_key_id
     timeout: 30
   calendar_custom:
-    class_name: "CalendarCustomPushNotification"
     timeout: 60
