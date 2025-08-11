@@ -117,8 +117,8 @@ If you need to connect to multiple apps, you can configure them in the `config/p
 
 First, you need to specify an `application` key which is the base configuration for all apps.
 The base configuration will be merged with the specific configuration for each app.
-Then, you can add specific configurations for each app by using the snake-case version of the Notification class name.
-Module namespaces are ignored, so `Calendar::PushNotification` and `CalendarPushNotification` both map to the same key: `calendar_push_notification`.
+Then, you can add specific configurations for each app by using the snake-case version of the Notification class name as
+key after removing the `PushNotification` suffix (if present). Module namespaces are ignored, so `Calendar::PushNotification` and `CalendarPushNotification` both map to the same key: `calendar`.
 
 In the example below we are configuring two apps: `calendar` and `email` using respectively the
 `CalendarPushNotification` and `EmailPushNotification` notification classes for both Apple and Google
@@ -130,7 +130,7 @@ shared:
     application:
       team_id: your_apple_team_id
 
-    calendar_push_notification:
+    calendar:
       # Token auth params
       # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
       key_id: calendar_key_id
@@ -138,7 +138,7 @@ shared:
       # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
       topic: calendar.bundle.identifier
 
-    email_push_notification:
+    email:
       # Token auth params
       # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
       key_id: email_key_id
@@ -152,10 +152,10 @@ shared:
       # See https://firebase.google.com/docs/cloud-messaging/auth-server
       encryption_key: your_service_account_json_file
 
-    calendar_push_notification:
+    calendar:
       # Firebase project_id
       project_id: calendar_project_id
-    email_push_notification:
+    email:
       # Firebase project_id
       project_id: email_project_id
 ```
