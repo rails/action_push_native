@@ -31,7 +31,7 @@ module ActionPush
     raise "ActionPush: '#{platform}' Platform is not configured" unless platform_config.present?
 
     if application_config = platform_config.delete(:application)
-      notification_class_config = platform_config.fetch(underscore_class_name(notification_class).to_sym, {})
+      notification_class_config = platform_config.fetch(to_underscore(notification_class).to_sym, {})
       application_config.merge(notification_class_config)
     else
       platform_config
@@ -43,7 +43,7 @@ module ActionPush
       Rails.application.config_for(:push)
     end
 
-    def self.underscore_class_name(klass)
+    def self.to_underscore(klass)
       klass.name.gsub(/PushNotification\z/, "").tr(":", "").underscore
     end
 end
