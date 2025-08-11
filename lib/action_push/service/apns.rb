@@ -61,7 +61,7 @@ module ActionPush
             yield
           rescue Errno::ETIMEDOUT => e
             raise ActionPush::TimeoutError, e.message
-          rescue Errno::ECONNRESET, Errno::ECONNREFUSED, SocketError => e
+          rescue Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError => e
             raise ActionPush::ConnectionError, e.message
           rescue OpenSSL::SSL::SSLError => e
             if e.message.include?("SSL_connect")

@@ -74,7 +74,7 @@ module ActionPush
           yield
         rescue Net::ReadTimeout, Net::OpenTimeout => e
           raise ActionPush::TimeoutError, e.message
-        rescue SocketError => e
+        rescue Errno::ECONNRESET, SocketError => e
           raise ActionPush::ConnectionError, e.message
         rescue OpenSSL::SSL::SSLError => e
           if e.message.include?("SSL_connect")
