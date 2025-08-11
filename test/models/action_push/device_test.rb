@@ -1,7 +1,7 @@
 require "test_helper"
 
 module ActionPush
-  class DeviceModelTest < ActiveSupport::TestCase
+  class DeviceTest < ActiveSupport::TestCase
     setup { @notification = ActionPush::Notification.new(title: "Hi!") }
 
     test "push to apple" do
@@ -37,37 +37,5 @@ module ActionPush
       end
       assert iphone.destroyed?
     end
-
-    test "customized TokenError handling" do
-      iphone = action_push_devices(:iphone).becomes(Device)
-      ActionPush::Service::Apns.any_instance.expects(:push).raises(TokenError)
-      assert_no_difference -> { ActionPush::Device.count } do
-        iphone.push(@notification)
-      end
-      assert_not iphone.destroyed?
-
-      custom_device = CustomDevice.new
-      ActionPush::Service::Apns.any_instance.expects(:push).raises(TokenError)
-      custom_device.push(@notification)
-    end
-
-    private
-      class Device < ActionPush::Device
-        rescue_from(TokenError) { }
-      end
-
-      class CustomDevice
-        include DeviceModel
-
-        rescue_from(TokenError) { }
-
-        def token
-          "123"
-        end
-
-        def platform
-          "apple"
-        end
-      end
   end
 end

@@ -18,6 +18,7 @@ The installation will create:
 
 - `app/models/application_push_notification.rb`
 - `app/jobs/application_push_notification_job.rb`
+- `app/models/application_push_device.rb`
 - `config/push.yml`
 
 `app/models/application_push_notification.rb`:
@@ -53,6 +54,18 @@ end
 ```
 
 This is the job class that processes the push notifications. You can customize it by editing it
+directly in your application.
+
+`app/models/application_push_device.rb`:
+
+```ruby
+class ApplicationPushDevice < ActionPush::Device
+  # Customize TokenError handling
+  # rescue_from (ActionPush::TokenError) { Rails.logger.error("Device #{id} token is invalid") }
+end
+```
+
+This class is used to represent a push notification device in your application. You can customize it by editing it
 directly in your application.
 
 `config/push.yml`:
@@ -112,7 +125,7 @@ for each class (e.g., `calendar`, `email`).
 ### Create and send a notification asynchronously to a device
 
 ```ruby
-device = Device.create! \
+device = ApplicationPushDevice.create! \
   name: "iPhone 16",
   token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
   platform: "apple"
@@ -221,38 +234,11 @@ A Device can be associated with any record in your application via the `owner` p
 ```ruby
   user = User.find_by_email_address("jacopo@37signals.com")
 
-  Device.create! \
+  ApplicationPushDevice.create! \
     name: "iPhone 16",
     token: "6c267f26b173cd9595ae2f6702b1ab560371a60e7c8a9e27419bd0fa4a42e58f",
     platform: "apple",
     owner: user
-```
-
-### Using a custom Device model
-
-You can use a custom device model, as long as:
-
-1. It can be serialized and deserialized by `ActiveJob`.
-2. It responds to the `token` and `platform` methods.
-3. It includes the `ActionPush::DeviceModel` module.
-
-By default, when a token error occurs, the device is destroyed.
-You can customize this behavior by adding custom rescue logic in your device model:
-
-```ruby
-class Device < ActionPush::Device
-  rescue_from ActionPush::TokenError do |error|
-    # Custom logic to handle token errors
-  end
-end
-
-class CustomDevice < ActionPush::Device
-  include ActionPush::DeviceModel
-
-  rescue_from ActionPush::TokenError do |error|
-    # Custom logic to handle token errors
-  end
-end
 ```
 
 ### `ActionPush::Notification` attributes
