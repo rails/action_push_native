@@ -129,18 +129,21 @@ platforms.
 shared:
   apple:
     application:
-      # Token auth params
-      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-      key_id: your_key_id
-      encryption_key: your_apple_encryption_key
-
       team_id: your_apple_team_id
 
     calendar:
+      # Token auth params
+      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+      key_id: calendar_key_id
+      encryption_key: calendar_apple_encryption_key
       # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
       topic: calendar.bundle.identifier
 
     email:
+      # Token auth params
+      # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
+      key_id: email_key_id
+      encryption_key: email_apple_encryption_key
       # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
       topic: email.bundle.identifier
       # If not inferred, the Class name can be specified directly
