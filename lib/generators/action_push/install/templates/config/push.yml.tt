@@ -25,12 +25,12 @@ shared:
       # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
       # will be considered as PRODUCTION environment.
       # connect_to_development_server: <%# Rails.env.development? %>
-    calendar:
-      # Special configuration for CalendarPushNotification
-      request_timeout: 30
-    email:
-      # If not inferred, the Class name can be specified directly
-      # class_name: "CustomEmailPushNotification"
+    # calendar:
+    #   Special configuration for CalendarPushNotification
+    #   timeout: 30
+    # email:
+    #   If not inferred, the Class name can be specified directly
+    #   class_name: "CustomEmailPushNotification"
   google:
     # Your Firebase project service account credentials
     # See https://firebase.google.com/docs/cloud-messaging/auth-server
