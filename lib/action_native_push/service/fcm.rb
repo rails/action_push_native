@@ -64,7 +64,7 @@ module ActionNativePush
           yield
         rescue Net::ReadTimeout, Net::OpenTimeout => e
           raise ActionNativePush::Errors::TimeoutError, e.message
-        rescue SocketError => e
+        rescue Errno::ECONNRESET, SocketError => e
           raise ActionNativePush::Errors::ConnectionError, e.message
         rescue OpenSSL::SSL::SSLError => e
           if e.message.include?("SSL_connect")
