@@ -61,7 +61,7 @@ module ActionNativePush
             yield
           rescue Errno::ETIMEDOUT => e
             raise ActionNativePush::Errors::TimeoutError, e.message
-          rescue Errno::ECONNRESET, Errno::ECONNREFUSED, SocketError => e
+          rescue Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError => e
             raise ActionNativePush::Errors::ConnectionError, e.message
           rescue OpenSSL::SSL::SSLError => e
             if e.message.include?("SSL_connect")
