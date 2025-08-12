@@ -9,12 +9,12 @@ module ActionPush
     end
 
     test "with_apple" do
-      notification = ActionPush::Notification.with_apple(category: "readable", thread_id: "67890").new
+      notification = ActionPush::Notification.with_apple(category: "readable").with_apple(thread_id: "67890").new
       assert_equal({ category: "readable", thread_id: "67890" }, notification.apple_data)
     end
 
     test "with_google" do
-      notification = ActionPush::Notification.with_google(notification: { collapse_key: "123" }, android: { notification_count: 1 }).new
+      notification = ActionPush::Notification.with_google(notification: { collapse_key: "123" }).with_google(android: { notification_count: 1 }).new
       assert_equal({ notification: { collapse_key: "123" }, android: { notification_count: 1 } }, notification.google_data)
     end
 

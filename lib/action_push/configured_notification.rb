@@ -10,22 +10,25 @@ module ActionPush
     end
 
     def with_data(data)
-      @options = options.merge(data: data)
+      @options[:data] ||= {}
+      options[:data].merge!(data)
       self
     end
 
     def with_apple(apple_data)
-      @options = options.merge(apple_data: apple_data)
+      @options[:apple_data] ||= {}
+      options[:apple_data].merge!(apple_data)
       self
     end
 
     def with_google(google_data)
-      @options = options.merge(google_data: google_data)
+      @options[:google_data] ||= {}
+      options[:google_data].merge!(google_data)
       self
     end
 
     def silent
-      @options = options.merge(high_priority: false)
+      options.merge!(high_priority: false)
       with_apple(content_available: 1)
     end
 
