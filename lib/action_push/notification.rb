@@ -23,16 +23,16 @@ module ActionPush
         self.queue_name = name
       end
 
+      def with_data(data)
+        ConfiguredNotification.new(self, data: data)
+      end
+
       def with_apple(apns_payload)
         ConfiguredNotification.new(self, apns_payload: apns_payload)
       end
 
       def with_google(fcm_payload)
         ConfiguredNotification.new(self, fcm_payload: fcm_payload)
-      end
-
-      def with_data(data)
-        ConfiguredNotification.new(self, data: data)
       end
 
       def silent
