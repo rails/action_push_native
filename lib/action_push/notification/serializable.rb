@@ -11,9 +11,9 @@ module ActionPush::Notification::Serializable
       thread_id: thread_id,
       sound: sound,
       high_priority: high_priority,
-      apns_payload: apns_payload,
-      fcm_payload: fcm_payload,
-      data: data,
+      apns_payload: apns_payload.compact,
+      fcm_payload: fcm_payload.compact,
+      data: data.compact,
       **context
     }.compact
   end
