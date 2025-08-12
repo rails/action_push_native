@@ -20,7 +20,6 @@ module ActionPush
     end
 
     class_attribute :enabled, default: !Rails.env.test?
-
     class_attribute :application
 
     define_model_callbacks :delivery
