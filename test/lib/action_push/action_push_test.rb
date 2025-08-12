@@ -25,7 +25,7 @@ class ActionPushTest < ActiveSupport::TestCase
       encryption_key: "your_apple_encryption_key",
       team_id: "your_apple_team_id",
       topic: "your.bundle.identifier",
-      timeout: 30
+      timeout: 60
     }
     assert_equal expected_config, service.send(:config)
   end
@@ -50,7 +50,7 @@ class ActionPushTest < ActiveSupport::TestCase
       encryption_key: "your_apple_encryption_key",
       team_id: "your_apple_team_id",
       topic: "your.bundle.identifier",
-      timeout: 30
+      timeout: 60
     }
     assert_equal expected_config, config
   end

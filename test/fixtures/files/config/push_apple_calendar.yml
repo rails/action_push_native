@@ -6,4 +6,4 @@ apple:
     topic: your.bundle.identifier
   calendar:
     key_id: calendar_key_id
-    timeout: 30
+    timeout: 60
