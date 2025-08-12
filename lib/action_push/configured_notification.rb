@@ -27,7 +27,6 @@ module ActionPush
     def silent
       @options = options.merge(high_priority: false)
       with_apple(content_available: 1)
-      self
     end
 
     private
