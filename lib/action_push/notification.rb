@@ -35,7 +35,7 @@ module ActionPush
       end
 
       def silent
-        ConfiguredNotification.new(self, high_priority: false).with_apple(content_available: 1)
+        ConfiguredNotification.new(self).silent
       end
     end
 
