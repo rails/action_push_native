@@ -64,7 +64,7 @@ module ActionPush
   end
 end
 
-# Backward compat to handle in-flight jobs.
+# Backward compatibility to handle in-flight jobs.
 module ActionNativePush
   class NotificationDeliveryJob < ActionPush::NotificationJob
   end
