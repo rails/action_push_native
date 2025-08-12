@@ -2,9 +2,9 @@
 
 VERSION=$1
 
-printf "module ActionPush\n  VERSION = \"$VERSION\"\nend\n" > ./lib/actionpush/version.rb
+printf "module ActionPush\n  VERSION = \"$VERSION\"\nend\n" > ./lib/action_push/version.rb
 bundle
-git add Gemfile.lock lib/actionpush/version.rb
+git add Gemfile.lock lib/action_push/version.rb
 git commit -m "Bump version for $VERSION"
 git push
 git tag v$VERSION
