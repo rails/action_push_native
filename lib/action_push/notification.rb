@@ -8,7 +8,7 @@ module ActionPush
     extend ActiveModel::Callbacks
     include Serializable
 
-    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload, :data
+    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apple_data, :google_data, :data
     attr_accessor :context
     attr_accessor :token
 
@@ -27,12 +27,12 @@ module ActionPush
         ConfiguredNotification.new(self, data: data)
       end
 
-      def with_apple(apns_payload)
-        ConfiguredNotification.new(self, apns_payload: apns_payload)
+      def with_apple(apple_data)
+        ConfiguredNotification.new(self, apple_data: apple_data)
       end
 
-      def with_google(fcm_payload)
-        ConfiguredNotification.new(self, fcm_payload: fcm_payload)
+      def with_google(google_data)
+        ConfiguredNotification.new(self, google_data: google_data)
       end
 
       def silent
@@ -49,20 +49,20 @@ module ActionPush
     #   sound - The sound to play when the notification is received
     #   high_priority - Whether to send the notification with high priority (default: true).
     #                   For silent notifications is recommended to set this to false
-    #   apns_payload - Apple Push Notification Service (APNS) specific data
-    #   fcm_payload - Firebase Cloud Messaging (FCM) specific data
+    #   apple_data - Apple Push Notification Service (APNS) specific data
+    #   google_data - Firebase Cloud Messaging (FCM) specific data
     #   data - Custom data to be sent with the notification
     #
     #   Any extra attributes are set inside the `context` hash.
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, apns_payload: {}, fcm_payload: {}, data: {}, **context)
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, apple_data: {}, google_data: {}, data: {}, **context)
       @title = title
       @body = body
       @badge = badge
       @thread_id = thread_id
       @sound = sound
       @high_priority = high_priority
-      @apns_payload = apns_payload
-      @fcm_payload = fcm_payload
+      @apple_data = apple_data
+      @google_data = google_data
       @data = data
       @context = context
     end

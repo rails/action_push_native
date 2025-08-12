@@ -14,13 +14,13 @@ module ActionPush
       self
     end
 
-    def with_apple(apns_payload)
-      @options = options.merge(apns_payload: apns_payload)
+    def with_apple(apple_data)
+      @options = options.merge(apple_data: apple_data)
       self
     end
 
-    def with_google(fcm_payload)
-      @options = options.merge(fcm_payload: fcm_payload)
+    def with_google(google_data)
+      @options = options.merge(google_data: google_data)
       self
     end
 

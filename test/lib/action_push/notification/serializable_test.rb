@@ -24,8 +24,8 @@ module ActionPush
           thread_id: "12345",
           sound: "default",
           high_priority: false,
-          apns_payload: { category: "readable" },
-          fcm_payload: { notification: { collapse_key: "1" } },
+          apple_data: { category: "readable" },
+          google_data: { notification: { collapse_key: "1" } },
           data: { badge: "1" },
           calendar_id: 1
         }
@@ -41,8 +41,8 @@ module ActionPush
           thread_id: "12345",
           sound: "default",
           high_priority: false,
-          apns_payload: { category: "readable" },
-          fcm_payload: { notification: { collapse_key: "1" } },
+          apple_data: { category: "readable" },
+          google_data: { notification: { collapse_key: "1" } },
           data: { badge: "1" },
           calendar_id: 1
         }
@@ -54,8 +54,8 @@ module ActionPush
       assert_equal "12345", notification.thread_id
       assert_equal "default", notification.sound
       assert_equal false, notification.high_priority
-      assert_equal({ category: "readable" }, notification.apns_payload)
-      assert_equal({ notification: { collapse_key: "1" } }, notification.fcm_payload)
+      assert_equal({ category: "readable" }, notification.apple_data)
+      assert_equal({ notification: { collapse_key: "1" } }, notification.google_data)
       assert_equal({ badge: "1" }, notification.data)
       assert_equal 1, notification.context[:calendar_id]
     end
@@ -84,8 +84,8 @@ module ActionPush
       assert_equal "12345", notification.thread_id
       assert_equal "default", notification.sound
       assert_equal false, notification.high_priority
-      assert_equal({ category: "readable" }, notification.apns_payload)
-      assert_equal({ data: { badge: "1" } }, notification.fcm_payload)
+      assert_equal({ category: "readable" }, notification.apple_data)
+      assert_equal({ data: { badge: "1" } }, notification.google_data)
       assert_equal({ person: "Jacopo", extras: nil }, notification.data)
       assert_equal({ notification_id: 123 }, notification.context)
     end

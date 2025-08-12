@@ -5,17 +5,17 @@ module ActionPush
     test "silent notification" do
       notification = ActionPush::Notification.silent.new(title: "Hi!")
       assert_equal false, notification.high_priority
-      assert_equal({ content_available: 1 }, notification.apns_payload)
+      assert_equal({ content_available: 1 }, notification.apple_data)
     end
 
     test "with_apple" do
       notification = ActionPush::Notification.with_apple(category: "readable", thread_id: "67890").new
-      assert_equal({ category: "readable", thread_id: "67890" }, notification.apns_payload)
+      assert_equal({ category: "readable", thread_id: "67890" }, notification.apple_data)
     end
 
     test "with_google" do
       notification = ActionPush::Notification.with_google(notification: { collapse_key: "123" }, android: { notification_count: 1 }).new
-      assert_equal({ notification: { collapse_key: "123" }, android: { notification_count: 1 } }, notification.fcm_payload)
+      assert_equal({ notification: { collapse_key: "123" }, android: { notification_count: 1 } }, notification.google_data)
     end
 
     test "with_data" do

@@ -11,19 +11,19 @@ module ActionPush::Notification::Serializable
       thread_id: thread_id,
       sound: sound,
       high_priority: high_priority,
-      apns_payload: apns_payload.compact,
-      fcm_payload: fcm_payload.compact,
+      apple_data: apple_data.compact,
+      google_data: google_data.compact,
       data: data.compact,
       **context
     }.compact
   end
 
   class_methods do
-    def deserialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: nil, apns_payload: nil, fcm_payload: nil, data: nil, service_payload: nil, custom_payload: nil, context: nil, **new_context)
+    def deserialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: nil, apple_data: nil, google_data: nil, data: nil, service_payload: nil, custom_payload: nil, context: nil, **new_context)
       self.new(title:, body:, badge:, thread_id:, sound:, high_priority:).tap do |notification|
         # Legacy fields backward compatibility to handle in-flight jobs.
-        notification.apns_payload = service_payload&.fetch(:apns, nil) || apns_payload
-        notification.fcm_payload  = service_payload&.fetch(:fcm,  nil) || fcm_payload
+        notification.apple_data   = service_payload&.fetch(:apns, nil) || apple_data
+        notification.google_data  = service_payload&.fetch(:fcm,  nil) || google_data
         notification.data         = custom_payload   || data
         notification.context      = context.presence || new_context
       end

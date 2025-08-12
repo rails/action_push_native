@@ -34,7 +34,7 @@ module ActionPush
                 collapse_key: notification.thread_id,
                 priority: notification.high_priority == true ? "high" : "normal"
               }
-            }.deep_merge(notification.fcm_payload ? stringify_data(notification.fcm_payload) : {})
+            }.deep_merge(notification.google_data ? stringify_data(notification.google_data) : {})
           })
         end
 
@@ -46,8 +46,8 @@ module ActionPush
         end
 
         # FCM requires data values to be strings.
-        def stringify_data(fcm_payload)
-          fcm_payload.tap do |payload|
+        def stringify_data(google_data)
+          google_data.tap do |payload|
             payload[:data] = stringify(payload[:data]) if payload[:data]
           end
         end
