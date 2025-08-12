@@ -28,7 +28,7 @@ module ActionPush
 
   def self.config_for(platform, notification)
     platform_config = Rails.application.config_for(:push)[platform.to_sym]
-    raise "ActionPush: '#{platform}' Platform is not configured" unless platform_config.present?
+    raise "ActionPush: '#{platform}' platform is not configured" unless platform_config.present?
 
     if notification.application.present?
       notification_config = platform_config.fetch(notification.application.to_sym, {})
