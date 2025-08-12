@@ -22,7 +22,7 @@ module ActionPush
     when :google
       Service::Fcm.new(platform_config)
     else
-      raise "ActionPush: '#{platform}' Platform is unsupported"
+      raise "ActionPush: '#{platform}' platform is unsupported"
     end
   end
 
