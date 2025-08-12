@@ -45,13 +45,13 @@ module ActionPush
           payload
         end
 
+        # FCM requires data values to be strings.
         def stringify_data(fcm_payload)
           fcm_payload.tap do |payload|
             payload[:data] = stringify(payload[:data]) if payload[:data]
           end
         end
 
-        # FCM requires data values to be strings.
         def stringify(hash)
           hash.compact.transform_values(&:to_s)
         end
