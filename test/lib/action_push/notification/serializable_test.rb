@@ -1,7 +1,7 @@
 require "test_helper"
 
 module ActionPush
-  class Notification::BuilderTest < ActiveSupport::TestCase
+  class Notification::SerializableTest < ActiveSupport::TestCase
     test "serialize" do
       notification = ActionPush::Notification
         .with_apple(category: "readable")
