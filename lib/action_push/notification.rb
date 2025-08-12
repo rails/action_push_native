@@ -6,7 +6,6 @@ module ActionPush
   # A notification that can be delivered to devices.
   class Notification
     extend ActiveModel::Callbacks
-    include Serializable
 
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apple_data, :google_data, :data
     attr_accessor :context
@@ -75,8 +74,23 @@ module ActionPush
 
     def deliver_later_to(devices)
       Array(devices).each do |device|
-        ApplicationPushNotificationJob.set(queue: queue_name).perform_later(self.class.name, self.serialize, device)
+        ApplicationPushNotificationJob.set(queue: queue_name).perform_later(self.class.name, self.as_json, device)
       end
+    end
+
+    def as_json
+      {
+        title: title,
+        body: body,
+        badge: badge,
+        thread_id: thread_id,
+        sound: sound,
+        high_priority: high_priority,
+        apple_data: apple_data.compact,
+        google_data: google_data.compact,
+        data: data.compact,
+        **context
+      }.compact
     end
   end
 end
