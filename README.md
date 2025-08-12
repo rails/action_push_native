@@ -82,19 +82,6 @@ shared:
     # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
     topic: your.bundle.identifier
 
-    # Set this to the number of threads used to process notifications (Default: 5).
-    # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
-    # connection_pool_size: 5
-
-    # Change the request timeout (Default: 30).
-    # request_timeout: 60
-
-    # Decide when to connect to APNs development server.
-    # Please note that anything built directly from Xcode and loaded on your phone will have
-    # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
-    # will be considered as PRODUCTION environment.
-    # connect_to_development_server: <%# Rails.env.development? %>
-
   google:
     # Your Firebase project service account credentials
     # See https://firebase.google.com/docs/cloud-messaging/auth-server
@@ -102,9 +89,6 @@ shared:
 
     # Firebase project_id
     project_id: your_project_id
-
-    # Change the request timeout (Default: 15).
-    # request_timeout: 30
 ```
 
 This file contains the configuration for the push notification services you want to use.
@@ -115,8 +99,8 @@ If you're configuring more than one app, see the section [Configuring multiple a
 
 You can send push notifications to multiple apps using different notification classes.
 Each notification class need to inherit from `ApplicationPushNotification` and set `self.application`, to a key set in `push.yml`
-for each supported platform. You can also (optionally) set a shared per-platform `application` option in `push.yml`.
-This acts as the base configuration for that platform, and its values will be merged with the matching app-specific configuration.
+for each supported platform. You can also (optionally) set a shared `application` option in `push.yml`.
+This acts as the base configuration for that platform, and its values will be merged (and overridden) with the matching app-specific configuration.
 
 In the example below we are configuring two apps: `calendar` and `email` using respectively the
 `CalendarPushNotification` and `EmailPushNotification` notification classes.
@@ -245,7 +229,7 @@ notification = ApplicationPushNotification
   .new(title: "Hello world!", body: "Welcome to Action Push", badge: 1)
 ```
 
-This will unset the `notification_count` (`badge`) field in the Google payload, while keeping `title`
+This will unset the default `notification_count` (`badge`) field in the Google payload, while keeping `title`
 and `body`.
 
 ### Silent Notifications
