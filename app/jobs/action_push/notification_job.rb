@@ -52,18 +52,20 @@ module ActionPush
     end
 
     def perform(notification_class, notification_attributes, device = nil)
-      # Backward compatibility to handle in-flight jobs.
       if device.nil?
+        # Backward compatibility to handle in-flight jobs.
         device = notification_attributes
         notification_attributes = notification_class
-        notification_class = "ApplicationPushNotification"
+        ApplicationPushNotificationJob.perform_later("ApplicationPushNotification", notification_attributes, device)
+      else
+        notification_class.constantize.deserialize(**notification_attributes).deliver_to(device)
       end
-
-      notification_class.constantize.deserialize(**notification_attributes).deliver_to(device)
     end
   end
 end
 
 # Backward compat to handle in-flight jobs.
-module ActionNativePush; end
-ActionNativePush::NotificationDeliveryJob = ActionPush::NotificationJob
+module ActionNativePush
+  class NotificationDeliveryJob < ActionPush::NotificationJob
+  end
+end
