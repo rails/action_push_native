@@ -7,22 +7,38 @@ module ActionPush
   class Notification
     extend ActiveModel::Callbacks
     include Serializable
-    prepend Builder
 
     attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apns_payload, :fcm_payload, :data
     attr_accessor :context
     attr_accessor :token
 
+    define_model_callbacks :delivery
+
     class_attribute :queue_name, default: ActiveJob::Base.default_queue_name
-
-    def self.queue_as(name)
-      self.queue_name = name
-    end
-
     class_attribute :enabled, default: !Rails.env.test?
     class_attribute :application
 
-    define_model_callbacks :delivery
+    class << self
+      def queue_as(name)
+        self.queue_name = name
+      end
+
+      def with_apple(apns_payload)
+        ConfiguredNotification.new(self, apns_payload: apns_payload)
+      end
+
+      def with_google(fcm_payload)
+        ConfiguredNotification.new(self, fcm_payload: fcm_payload)
+      end
+
+      def with_data(data)
+        ConfiguredNotification.new(self, data: data)
+      end
+
+      def silent
+        ConfiguredNotification.new(self, high_priority: false).with_apple(content_available: 1)
+      end
+    end
 
     # === Attributes
     #
@@ -33,15 +49,21 @@ module ActionPush
     #   sound - The sound to play when the notification is received
     #   high_priority - Whether to send the notification with high priority (default: true).
     #                   For silent notifications is recommended to set this to false
-    #   Any extra attributes is set inside the `context` hash.
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, **context)
+    #   apns_payload - Apple Push Notification Service (APNS) specific data
+    #   fcm_payload - Firebase Cloud Messaging (FCM) specific data
+    #   data - Custom data to be sent with the notification
+    #
+    #   Any extra attributes are set inside the `context` hash.
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, apns_payload: {}, fcm_payload: {}, data: {}, **context)
       @title = title
       @body = body
       @badge = badge
       @thread_id = thread_id
       @sound = sound
-      # Do not override @high_priority if it was already set earlier using .silent
-      @high_priority = high_priority if @high_priority.nil?
+      @high_priority = high_priority
+      @apns_payload = apns_payload
+      @fcm_payload = fcm_payload
+      @data = data
       @context = context
     end
 

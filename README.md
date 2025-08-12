@@ -313,6 +313,7 @@ end
 | :thread_id       | The thread identifier for grouping notifications.
 | :sound           | The sound to play when the notification is received.
 | :high_priority   | Whether the notification should be sent with high priority (default: true).
+| **               | Any additional attributes passed to the constructor will be merged in the `context` hash.
 
 ### Factory methods
 

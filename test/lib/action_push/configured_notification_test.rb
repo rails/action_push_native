@@ -1,7 +1,7 @@
 require "test_helper"
 
 module ActionPush
-  class Notification::BuilderTest < ActiveSupport::TestCase
+  class Notification::ConfiguredNotificationTest < ActiveSupport::TestCase
     test "silent notification" do
       notification = ActionPush::Notification.silent.new(title: "Hi!")
       assert_equal false, notification.high_priority
@@ -9,12 +9,12 @@ module ActionPush
     end
 
     test "with_apple" do
-      notification = ActionPush::Notification.with_apple(category: "readable").with_apple(thread_id: "67890").new
+      notification = ActionPush::Notification.with_apple(category: "readable", thread_id: "67890").new
       assert_equal({ category: "readable", thread_id: "67890" }, notification.apns_payload)
     end
 
     test "with_google" do
-      notification = ActionPush::Notification.with_google(notification: { collapse_key: "123" }).with_google(android: { notification_count: 1 }).new
+      notification = ActionPush::Notification.with_google(notification: { collapse_key: "123" }, android: { notification_count: 1 }).new
       assert_equal({ notification: { collapse_key: "123" }, android: { notification_count: 1 } }, notification.fcm_payload)
     end
 
