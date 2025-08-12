@@ -56,12 +56,14 @@ module ActionPush
       if device.nil?
         device = notification_attributes
         notification_attributes = notification_class
-        notification_class = Notification
+        notification_class = "ApplicationPushNotification"
       end
 
       notification_class.constantize.deserialize(**notification_attributes).deliver_to(device)
     end
   end
 end
+
 # Backward compat to handle in-flight jobs.
-ActionPush::NotificationDeliveryJob = ActionPush::NotificationJob
+module ActionNativePush; end
+ActionNativePush::NotificationDeliveryJob = ActionPush::NotificationJob
