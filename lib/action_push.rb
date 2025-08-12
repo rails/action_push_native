@@ -14,7 +14,7 @@ loader.setup
 
 module ActionPush
   def self.service_for(platform, notification)
-    platform_config = config_for(platform, notification.class)
+    platform_config = config_for(platform, notification)
 
     case platform.to_sym
     when :apple
@@ -26,24 +26,18 @@ module ActionPush
     end
   end
 
-  def self.config_for(platform, notification_class)
-    platform_config = config[platform.to_sym]
+  def self.config_for(platform, notification)
+    platform_config = Rails.application.config_for(:push)[platform.to_sym]
     raise "ActionPush: '#{platform}' Platform is not configured" unless platform_config.present?
 
-    if application_config = platform_config.delete(:application)
-      notification_class_config = platform_config.fetch(to_underscore(notification_class).to_sym, {})
-      application_config.merge(notification_class_config)
+    if notification.application.present?
+      notification_config = platform_config.fetch(notification.application.to_sym, {})
+      raise "ActionPush: '#{notification.application}' application is not configured for '#{platform}'" unless notification_config.present?
+
+      base_config = platform_config.fetch(:application, {})
+      base_config.merge(notification_config)
     else
       platform_config
     end
   end
-
-  private
-    def self.config
-      Rails.application.config_for(:push)
-    end
-
-    def self.to_underscore(klass)
-      klass.name.gsub(/PushNotification\z/, "").tr(":", "").underscore
-    end
 end

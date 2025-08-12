@@ -113,20 +113,33 @@ If you're configuring more than one app, see the section [Configuring multiple a
 
 ### Configuring multiple apps
 
-If you need to connect to multiple apps, you can configure them in the `config/push.yml` file:
-
-First, you need to specify an `application` key which is the base configuration for all apps.
-The base configuration will be merged with the specific configuration for each app.
-Then, you can add specific configurations for each app by using the snake-case version of the Notification class name as
-key after removing the `PushNotification` suffix (if present). Module namespaces are ignored, so `Calendar::PushNotification` and `CalendarPushNotification` both map to the same key: `calendar`.
+You can send push notifications to multiple apps using different notification classes.
+Each notification class need to inherit from `ApplicationPushNotification` and set `self.application`, to a key set in `push.yml`
+for each supported platform. You can also (optionally) set a shared per-platform `application` option in `push.yml`.
+This acts as the base configuration for that platform, and its values will be merged with the matching app-specific configuration.
 
 In the example below we are configuring two apps: `calendar` and `email` using respectively the
-`CalendarPushNotification` and `EmailPushNotification` notification classes for both Apple and Google
-platforms.
+`CalendarPushNotification` and `EmailPushNotification` notification classes.
+
+```ruby
+class CalendarPushNotification < ApplicationPushNotification
+  self.application = "calendar"
+
+  # Custom notification logic for calendar app
+end
+
+class EmailPushNotification < ApplicationPushNotification
+  self.application = "email"
+
+  # Custom notification logic for email app
+end
+```
 
 ```yaml
 shared:
   apple:
+    # Base configuration for Apple platform
+    # This will be merged with the app-specific configuration
     application:
       team_id: your_apple_team_id
 
@@ -147,32 +160,22 @@ shared:
       topic: email.bundle.identifier
 
   google:
-    application:
+    calendar:
       # Your Firebase project service account credentials
       # See https://firebase.google.com/docs/cloud-messaging/auth-server
-      encryption_key: your_service_account_json_file
+      encryption_key: calendar_service_account_json_file
 
-    calendar:
       # Firebase project_id
       project_id: calendar_project_id
+
     email:
+      # Your Firebase project service account credentials
+      # See https://firebase.google.com/docs/cloud-messaging/auth-server
+      encryption_key: email_service_account_json_file
+
       # Firebase project_id
       project_id: email_project_id
 ```
-
-Both `CalendarPushNotification` and `EmailPushNotification` need to inherit from the
-`ApplicationPushNotification` class:
-
-```ruby
-class CalendarPushNotification < ApplicationPushNotification
-  # Custom notification logic for calendar app
-end
-
-class EmailPushNotification < ApplicationPushNotification
-  # Custom notification logic for email app
-end
-```
-
 
 ## Usage
 

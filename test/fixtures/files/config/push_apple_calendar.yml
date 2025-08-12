@@ -7,5 +7,3 @@ apple:
   calendar:
     key_id: calendar_key_id
     timeout: 30
-  calendar_custom:
-    timeout: 60
