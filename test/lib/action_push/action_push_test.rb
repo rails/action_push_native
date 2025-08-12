@@ -4,10 +4,6 @@ class CalendarPushNotification < ApplicationPushNotification
   self.application = "calendar"
 end
 
-class InvalidPushNotification < ApplicationPushNotification
-  self.application = "invalid"
-end
-
 # Test cases for ActionPush module
 # These tests ensure that the ActionPush module correctly configures and provides services for different platforms.
 # It also checks that the configuration is correctly applied based on the notification type.
@@ -15,7 +11,7 @@ end
 class ActionPushTest < ActiveSupport::TestCase
   test "service_for" do
     notification = CalendarPushNotification.new(title: "Hi")
-    stub_config("push_apple_calendar.yml")
+    stub_config("push_calendar.yml")
 
     service = ActionPush.service_for(action_push_devices(:iphone).platform, notification)
 
@@ -30,7 +26,7 @@ class ActionPushTest < ActiveSupport::TestCase
     assert_equal expected_config, service.send(:config)
   end
 
-  test "config_for" do
+  test "config_for application" do
     stub_config("push_apple.yml")
     config = ActionPush.config_for :apple, ApplicationPushNotification.new
     expected_config = {
@@ -43,7 +39,7 @@ class ActionPushTest < ActiveSupport::TestCase
   end
 
   test "config_for custom notification" do
-    stub_config("push_apple_calendar.yml")
+    stub_config("push_calendar.yml")
     config = ActionPush.config_for :apple, CalendarPushNotification.new
     expected_config = {
       key_id: "calendar_key_id",
@@ -55,12 +51,14 @@ class ActionPushTest < ActiveSupport::TestCase
     assert_equal expected_config, config
   end
 
-  test "config_for invalid application" do
-    stub_config("push_apple_calendar.yml")
-    error = assert_raises(RuntimeError) do
-      ActionPush.config_for :apple, InvalidPushNotification.new
-    end
-    assert_equal "ActionPush: 'invalid' application is not configured for 'apple'", error.message
+  test "config_for custom notification not set for a platform" do
+    stub_config("push_calendar.yml")
+    config = ActionPush.config_for :google, CalendarPushNotification.new
+    expected_config = {
+      encryption_key: "your_service_account_json_file",
+      project_id: "your_project_id"
+    }
+    assert_equal expected_config, config
   end
 
   private

@@ -32,8 +32,6 @@ module ActionPush
 
     if notification.application.present?
       notification_config = platform_config.fetch(notification.application.to_sym, {})
-      raise "ActionPush: '#{notification.application}' application is not configured for '#{platform}'" unless notification_config.present?
-
       platform_config.fetch(:application, {}).merge(notification_config)
     else
       platform_config

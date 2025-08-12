@@ -7,3 +7,7 @@ apple:
   calendar:
     key_id: calendar_key_id
     timeout: 60
+google:
+  application:
+    encryption_key: your_service_account_json_file
+    project_id: your_project_id
