@@ -66,7 +66,7 @@ class ApplicationPushDevice < ActionPush::Device
 end
 ```
 
-Represent a push notification device. You can customize it by editing it directly in your application.
+This represents a push notification device. You can customize it by editing it directly in your application.
 
 `config/push.yml`:
 
