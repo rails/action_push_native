@@ -1,6 +1,6 @@
 # Action Push
 
-Action Push is a Rails push notification gem for mobile platforms, supporting APNs (Apple) and FCM (Android).
+Action Push is a Rails push notification gem for mobile platforms, supporting APNs (Apple) and FCM (Google).
 
 ## Installation
 
