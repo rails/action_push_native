@@ -22,21 +22,12 @@ module ActionPush
         self.queue_name = name
       end
 
-      def with_data(data)
-        ConfiguredNotification.new(self, data: data)
-      end
+      delegate :with_data, :silent, :with_apple, :with_google, to: :configured_notification
 
-      def with_apple(apple_data)
-        ConfiguredNotification.new(self, apple_data: apple_data)
-      end
-
-      def with_google(google_data)
-        ConfiguredNotification.new(self, google_data: google_data)
-      end
-
-      def silent
-        ConfiguredNotification.new(self).silent
-      end
+      private
+        def configured_notification
+          ConfiguredNotification.new(self)
+        end
     end
 
     # === Attributes
