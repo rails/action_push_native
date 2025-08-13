@@ -29,7 +29,7 @@ class ApplicationPushNotification < ActionPush::Notification
   # Set a custom job queue_name
   queue_as :realtime
 
-  # Controls whether push notifications are enabled
+  # Controls whether push notifications are enabled (default: !Rails.env.test?)
   self.enabled = Rails.env.production?
 
   # Define a custom callback to modify or abort the notification before it is sent
@@ -61,7 +61,7 @@ directly in your application.
 
 ```ruby
 class ApplicationPushDevice < ActionPush::Device
-  # Customize TokenError handling
+  # Customize TokenError handling (default: destroy!)
   # rescue_from (ActionPush::TokenError) { Rails.logger.error("Device #{id} token is invalid") }
 end
 ```
