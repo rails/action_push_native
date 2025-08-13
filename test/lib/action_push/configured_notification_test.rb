@@ -6,6 +6,7 @@ module ActionPush
       notification = ActionPush::Notification.silent.new(title: "Hi!")
       assert_equal false, notification.high_priority
       assert_equal({ content_available: 1 }, notification.apple_data)
+      assert_equal("Hi!", notification.title)
     end
 
     test "with_apple" do
