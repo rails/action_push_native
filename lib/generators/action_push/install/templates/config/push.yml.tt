@@ -9,11 +9,11 @@ shared:
     # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
     topic: your.bundle.identifier
 
-    # Set this to the number of threads used to process notifications (Default: 5).
+    # Set this to the number of threads used to process notifications (default: 5).
     # When the pool size is too small a ConnectionPool::TimeoutError error will be raised.
     # connection_pool_size: 5
 
-    # Change the request timeout (Default: 30).
+    # Change the request timeout (default: 30).
     # request_timeout: 60
 
     # Decide when to connect to APNs development server.
@@ -30,5 +30,5 @@ shared:
     # Firebase project_id
     project_id: your_project_id
 
-    # Change the request timeout (Default: 15).
+    # Change the request timeout (default: 15).
     # request_timeout: 30
