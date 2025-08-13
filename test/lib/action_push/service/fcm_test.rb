@@ -5,7 +5,7 @@ module ActionPush
     class FcmTest < ActiveSupport::TestCase
       setup do
         @notification = build_notification
-        @fcm = Fcm.new(ActionPush.config_for(:google, @notification))
+        @fcm = ActionPush.service_for(:google, @notification)
         stub_authorizer
       end
 
