@@ -46,10 +46,10 @@ you can change the application defaults by editing it directly.
 
 ```ruby
 class ApplicationPushNotificationJob < ActionPush::NotificationJob
-  # Enable logging job arguments (false by default)
+  # Enable logging job arguments (default: false)
   self.log_arguments = true
 
-  # Report job retries via the `Rails.error` reporter (false by default)
+  # Report job retries via the `Rails.error` reporter (default: false)
   self.report_job_retries = true
 end
 ```
