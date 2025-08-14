@@ -77,9 +77,9 @@ module ActionPush
         thread_id: thread_id,
         sound: sound,
         high_priority: high_priority,
-        apple_data: apple_data.compact,
-        google_data: google_data.compact,
-        data: data.compact,
+        apple_data: apple_data,
+        google_data: google_data,
+        data: data,
         **context
       }.compact
     end
