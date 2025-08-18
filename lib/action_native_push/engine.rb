@@ -4,23 +4,8 @@ module ActionNativePush
   class Engine < ::Rails::Engine
     isolate_namespace ActionNativePush
 
-    config.action_native_push = ActiveSupport::OrderedOptions.new
-
     initializer "action_native_push.config" do |app|
       app.paths.add "config/push", with: "config/push.yml"
-
-      config_path = Pathname.new(app.config.paths["config/push"].first)
-      options = config_path.exist? ? app.config_for(config_path).to_h : {}
-
-      options[:job_queue_name] = config.action_native_push.job_queue_name if config.action_native_push.job_queue_name
-      options[:log_job_arguments] = config.action_native_push.log_job_arguments if config.action_native_push.log_job_arguments
-      options[:report_job_retries] = config.action_native_push.report_job_retries if config.action_native_push.report_job_retries
-      options[:enabled] = config.action_native_push.enabled if config.action_native_push.enabled
-      options[:applications] = config.action_native_push.applications if config.action_native_push.applications
-
-      options.each do |name, value|
-        ActionNativePush.public_send("#{name}=", value)
-      end
     end
   end
 end

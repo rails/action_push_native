@@ -4,9 +4,9 @@ module ActionNativePush
   module Service
     class ApnsTest < ActiveSupport::TestCase
       setup do
-        @config = ActionNativePush.applications[:ios]
-        @apns = Apns.new(@config)
         @notification = build_notification
+        @config = ActionNativePush.config_for(:apple, @notification)
+        @apns = Apns.new(@config)
       end
       teardown { Apns.connection_pools = {} }
 
@@ -38,14 +38,14 @@ module ActionNativePush
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400"))
         Apns.connection_pools = { @config => connection_pool }
 
-        assert_raises ActionNativePush::Errors::BadRequestError do
+        assert_raises ActionNativePush::BadRequestError do
           @apns.push(@notification)
         end
 
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400", body: { reason: "BadDeviceToken" }))
         Apns.connection_pools = { @config => connection_pool }
 
-        assert_raises ActionNativePush::Errors::DeviceTokenError do
+        assert_raises ActionNativePush::TokenError do
           @apns.push(@notification)
         end
       end
@@ -54,13 +54,14 @@ module ActionNativePush
         connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
         high_priority = 10
         Apns.connection_pools = { @config => connection_pool }
-        @notification.service_payload[:apns] = { priority: high_priority, "thread-id": "changed" }
+        @notification.apple_data = { priority: high_priority, "thread-id": "changed", custom_payload: nil }
 
         @apns.push(@notification)
 
         delivery =  connection_pool.deliveries.first[:notification]
         assert_equal high_priority, delivery.priority
         assert_equal "changed", delivery.thread_id
+        assert_nil delivery.custom_payload
       end
 
       private
@@ -99,21 +100,19 @@ module ActionNativePush
         end
 
         def build_notification
-          ActionNativePush::Notification.new(
-            title: "Hi!",
-            body: "This is a push notification",
-            badge: 1,
-            thread_id: "12345",
-            sound: "default",
-            high_priority: false,
-            service_payload: {
-              apns: { category: "readable" },
-              fcm: { android: { collapse_key: "321" } }
-            },
-            custom_payload: { person: "Jacopo" }
-          ).tap do |notification|
-            notification.token = "123"
-          end
+          ActionNativePush::Notification
+            .with_apple(category: "readable")
+            .with_data(person: "Jacopo")
+            .new(
+              title: "Hi!",
+              body: "This is a push notification",
+              badge: 1,
+              thread_id: "12345",
+              sound: "default",
+              high_priority: false
+            ).tap do |notification|
+              notification.token = "123"
+            end
         end
     end
   end

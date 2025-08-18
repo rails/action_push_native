@@ -23,8 +23,7 @@ module ActionNativePush
           deep_compact({
             message: {
               token: notification.token,
-              # FCM requires data values to be strings.
-              data: notification.custom_payload.compact.transform_values(&:to_s),
+              data: notification.data ? stringify(notification.data) : {},
               android: {
                 notification: {
                   title: notification.title,
@@ -35,7 +34,7 @@ module ActionNativePush
                 collapse_key: notification.thread_id,
                 priority: notification.high_priority == true ? "high" : "normal"
               }
-            }.deep_merge(notification.service_payload.fetch(:fcm, {}))
+            }.deep_merge(notification.google_data ? stringify_data(notification.google_data) : {})
           })
         end
 
@@ -44,6 +43,17 @@ module ActionNativePush
           payload.dig(:message, :android).try(&:compact!)
           payload[:message].compact!
           payload
+        end
+
+        # FCM requires data values to be strings.
+        def stringify_data(google_data)
+          google_data.tap do |payload|
+            payload[:data] = stringify(payload[:data]) if payload[:data]
+          end
+        end
+
+        def stringify(hash)
+          hash.compact.transform_values(&:to_s)
         end
 
         def post_request(payload)
@@ -63,12 +73,12 @@ module ActionNativePush
         def rescue_and_reraise_network_errors
           yield
         rescue Net::ReadTimeout, Net::OpenTimeout => e
-          raise ActionNativePush::Errors::TimeoutError, e.message
+          raise ActionNativePush::TimeoutError, e.message
         rescue Errno::ECONNRESET, SocketError => e
-          raise ActionNativePush::Errors::ConnectionError, e.message
+          raise ActionNativePush::ConnectionError, e.message
         rescue OpenSSL::SSL::SSLError => e
           if e.message.include?("SSL_connect")
-            raise ActionNativePush::Errors::ConnectionError, e.message
+            raise ActionNativePush::ConnectionError, e.message
           else
             raise
           end
@@ -94,19 +104,19 @@ module ActionNativePush
 
           case
           when reason =~ /message is too big/i
-            raise ActionNativePush::Errors::PayloadTooLargeError, reason
+            raise ActionNativePush::PayloadTooLargeError, reason
           when code == "400"
-            raise ActionNativePush::Errors::BadRequestError, reason
+            raise ActionNativePush::BadRequestError, reason
           when code == "404"
-            raise ActionNativePush::Errors::TokenError, reason
+            raise ActionNativePush::TokenError, reason
           when code.in?([ "401", "403" ])
-            raise ActionNativePush::Errors::ForbiddenError, reason
+            raise ActionNativePush::ForbiddenError, reason
           when code == "429"
-            raise ActionNativePush::Errors::TooManyRequestsError, reason
+            raise ActionNativePush::TooManyRequestsError, reason
           when code == "503"
-            raise ActionNativePush::Errors::ServiceUnavailableError, reason
+            raise ActionNativePush::ServiceUnavailableError, reason
           else
-            raise ActionNativePush::Errors::InternalServerError, reason
+            raise ActionNativePush::InternalServerError, reason
           end
         end
     end

@@ -2,13 +2,19 @@
 
 module ActionNativePush
   class Device < ApplicationRecord
-    belongs_to :record, polymorphic: true, optional: true
+    include ActiveSupport::Rescuable
 
-    validates_presence_of :token
-    validates :application, inclusion: { in: ActionNativePush.supported_applications }
+    rescue_from(TokenError) { destroy! }
 
-    def on_token_error
-      destroy!
+    belongs_to :owner, polymorphic: true, optional: true
+
+    enum :platform, { apple: "apple", google: "google" }
+
+    def push(notification)
+       notification.token = token
+       ActionNativePush.service_for(platform, notification).push(notification)
+    rescue => error
+      rescue_with_handler(error) || raise
     end
   end
 end

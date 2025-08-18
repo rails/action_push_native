@@ -5,9 +5,8 @@ class ActionNativePush::InstallGenerator < Rails::Generators::Base
 
   def copy_files
     template "config/push.yml"
-  end
-
-  def copy_migrations
-    rails_command "action_native_push:install:migrations"
+    template "app/models/application_push_notification.rb"
+    template "app/models/application_push_device.rb"
+    template "app/jobs/application_push_notification_job.rb"
   end
 end

@@ -60,12 +60,12 @@ module ActionNativePush
           begin
             yield
           rescue Errno::ETIMEDOUT => e
-            raise ActionNativePush::Errors::TimeoutError, e.message
+            raise ActionNativePush::TimeoutError, e.message
           rescue Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError => e
-            raise ActionNativePush::Errors::ConnectionError, e.message
+            raise ActionNativePush::ConnectionError, e.message
           rescue OpenSSL::SSL::SSLError => e
             if e.message.include?("SSL_connect")
-              raise ActionNativePush::Errors::ConnectionError, e.message
+              raise ActionNativePush::ConnectionError, e.message
             else
               raise
             end
@@ -82,8 +82,8 @@ module ActionNativePush
             n.thread_id = notification.thread_id
             n.sound = notification.sound
             n.priority = notification.high_priority ? PRIORITIES[:high] : PRIORITIES[:normal]
-            n.custom_payload = notification.custom_payload
-            notification.service_payload[:apns]&.each do |key, value|
+            n.custom_payload = notification.data
+            notification.apple_data&.each do |key, value|
               n.public_send("#{key.to_s.underscore}=", value)
             end
           end
@@ -97,27 +97,27 @@ module ActionNativePush
 
           case [ code, reason ]
           in [ nil, _ ]
-            raise ActionNativePush::Errors::TimeoutError
+            raise ActionNativePush::TimeoutError
           in [ "400", "BadDeviceToken" ]
-            raise ActionNativePush::Errors::DeviceTokenError, reason
+            raise ActionNativePush::TokenError, reason
           in [ "400", "DeviceTokenNotForTopic" ]
-            raise ActionNativePush::Errors::BadDeviceTopicError, reason
+            raise ActionNativePush::BadDeviceTopicError, reason
           in [ "400", _ ]
-            raise ActionNativePush::Errors::BadRequestError, reason
+            raise ActionNativePush::BadRequestError, reason
           in [ "403", _ ]
-            raise ActionNativePush::Errors::ForbiddenError, reason
+            raise ActionNativePush::ForbiddenError, reason
           in [ "404", _ ]
-            raise ActionNativePush::Errors::NotFoundError, reason
+            raise ActionNativePush::NotFoundError, reason
           in [ "410", _ ]
-            raise ActionNativePush::Errors::ExpiredTokenError, reason
+            raise ActionNativePush::TokenError, reason
           in [ "413", _ ]
-            raise ActionNativePush::Errors::PayloadTooLargeError, reason
+            raise ActionNativePush::PayloadTooLargeError, reason
           in [ "429", _ ]
-            raise ActionNativePush::Errors::TooManyRequestsError, reason
+            raise ActionNativePush::TooManyRequestsError, reason
           in [ "503", _ ]
-            raise ActionNativePush::Errors::ServiceUnavailableError, reason
+            raise ActionNativePush::ServiceUnavailableError, reason
           else
-            raise ActionNativePush::Errors::InternalServerError, reason
+            raise ActionNativePush::InternalServerError, reason
           end
         end
     end

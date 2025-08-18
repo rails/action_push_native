@@ -1,0 +1,5 @@
+apple:
+  key_id: your_key_id
+  encryption_key: your_apple_encryption_key
+  team_id: your_apple_team_id
+  topic: your.bundle.identifier

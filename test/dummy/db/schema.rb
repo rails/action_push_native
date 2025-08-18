@@ -10,12 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_10_133121) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_10_075650) do
   create_table "action_native_push_devices", force: :cascade do |t|
     t.string "name"
-    t.string "application", null: false
+    t.string "platform", null: false
     t.string "token", null: false
+    t.string "owner_type"
+    t.integer "owner_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_action_native_push_devices_on_owner"
   end
 end

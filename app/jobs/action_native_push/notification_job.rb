@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 module ActionNativePush
-  class NotificationDeliveryJob < ActiveJob::Base
-    queue_as ActionNativePush.job_queue_name
+  class NotificationJob < ActiveJob::Base
+    self.log_arguments = false
 
-    self.log_arguments = ActionNativePush.log_job_arguments
+    class_attribute :report_job_retries, default: false
 
     discard_on ActiveJob::DeserializationError
-    discard_on Errors::BadDeviceTopicError do |_job, error|
+    discard_on BadDeviceTopicError do |_job, error|
       Rails.error.report(error)
     end
 
     class << self
       def retry_options
-        Rails.version >= "8.1" ? { report: ActionNativePush.report_job_retries } : {}
+        Rails.version >= "8.1" ? { report: report_job_retries } : {}
       end
 
       # Exponential backoff starting from a minimum of 1 minute, capped at 60m as suggested by FCM:
@@ -39,20 +39,20 @@ module ActionNativePush
     end
 
     with_options retry_options do
-      retry_on Errors::TimeoutError, wait: 1.minute
-      retry_on Errors::ConnectionError, ConnectionPool::TimeoutError, attempts: 20
+      retry_on TimeoutError, wait: 1.minute
+      retry_on ConnectionError, ConnectionPool::TimeoutError, attempts: 20
 
       # Altough unexpected, these are short-lived errors that can be retried most of the times.
-      retry_on Errors::ForbiddenError, Errors::BadRequestError
+      retry_on ForbiddenError, BadRequestError
     end
 
     with_options wait: ->(executions) { exponential_backoff_delay(executions) }, attempts: 6, **retry_options do
-      retry_on Errors::TooManyRequestsError, Errors::ServiceUnavailableError, Errors::InternalServerError
+      retry_on TooManyRequestsError, ServiceUnavailableError, InternalServerError
       retry_on Signet::RemoteServerError
     end
 
-    def perform(notification_attributes, device)
-      Notification.new(**notification_attributes).deliver_to(device)
+    def perform(notification_class, notification_attributes, device)
+      notification_class.constantize.new(**notification_attributes).deliver_to(device)
     end
   end
 end

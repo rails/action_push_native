@@ -1,4 +1,5 @@
 /.bundle/
+/.claude
 /doc/
 /log/*.log
 /pkg/

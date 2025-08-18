@@ -1,0 +1,13 @@
+apple:
+  application:
+    key_id: your_key_id
+    encryption_key: your_apple_encryption_key
+    team_id: your_apple_team_id
+    topic: your.bundle.identifier
+  calendar:
+    key_id: calendar_key_id
+    timeout: 60
+google:
+  application:
+    encryption_key: your_service_account_json_file
+    project_id: your_project_id

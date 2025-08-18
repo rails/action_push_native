@@ -2,80 +2,64 @@ require "test_helper"
 
 module ActionNativePush
   class NotificationTest < ActiveSupport::TestCase
-    setup { @notification = build_notification }
-
-    test "as_json" do
-      assert_equal({ title: "Hi!",
-                     body: "This is a push notification",
-                     badge: 1,
-                     thread_id: "12345",
-                     sound: "default",
-                     high_priority: false,
-                     service_payload: { apns: { category: "readable" } },
-                     custom_payload: { person: "Jacopo" },
-                     context: {} }, @notification.as_json)
+    setup do
+      @notification = build_notification
+      ActionNativePush::Notification.enabled = true
     end
 
-    test "deliver_later_to" do
-      @notification.deliver_later_to([ action_native_push_devices(:iphone), action_native_push_devices(:pixel9) ])
-      assert_enqueued_with job: ActionNativePush::NotificationDeliveryJob, args: [ @notification.as_json, action_native_push_devices(:pixel9) ]
-      assert_enqueued_with job: ActionNativePush::NotificationDeliveryJob, args: [ @notification.as_json, action_native_push_devices(:iphone) ]
+    teardown do
+      ActionNativePush::Notification.enabled = false
     end
 
-    test "deliver_to APNs" do
+    test "deliver_to" do
       device = action_native_push_devices(:iphone)
-
-      apns = stub(:apns)
-      apns.expects(:push).with(@notification)
-      ActionNativePush::Service::Apns.expects(:new).with(ActionNativePush.applications[:ios]).returns(apns)
-
-      assert_changes -> { @notification.token }, from: nil, to: device.token do
-        @notification.deliver_to(device)
-      end
-    end
-
-    test "deliver_to FCM" do
-      device = action_native_push_devices(:pixel9)
-
-      fcm = stub(:fcm)
-      fcm.expects(:push).with(@notification)
-      ActionNativePush::Service::Fcm.expects(:new).with(ActionNativePush.applications[:android]).returns(fcm)
-
-      assert_changes -> { @notification.token }, from: nil, to: device.token do
-        @notification.deliver_to(device)
-      end
-    end
-
-    test "deliver_to calls device.on_token_error callback on token error" do
-      device = action_native_push_devices(:iphone)
-
-      device.expects(:on_token_error).once
-      ActionNativePush::Service::Apns.any_instance.expects(:push).raises(ActionNativePush::Errors::TokenError)
+      device.expects(:push).with(@notification)
 
       @notification.deliver_to(device)
     end
 
     test "deliver_to is a noop when disabled" do
-      previously_enabled, ActionNativePush.enabled = ActionNativePush.enabled, false
-
+      ActionNativePush::Notification.enabled = false
       device = action_native_push_devices(:iphone)
-      ActionNativePush::Service::Apns.any_instance.expects(:push).never
+      device.expects(:push).never
+
       @notification.deliver_to(device)
-    ensure
-      ActionNativePush.enabled = previously_enabled
     end
 
-    test "deliver_to before_delivery callback" do
-      callback_called = false
-      previous_before_delivery, Notification.before_delivery = Notification.instance_variable_get(:@_before_delivery), proc { callback_called = true }
-      ActionNativePush::Service::Apns.any_instance.stubs(:push)
+    test "deliver_later_to" do
+      @notification.deliver_later_to([ action_native_push_devices(:iphone), action_native_push_devices(:pixel9) ])
+      assert_enqueued_with job: ApplicationPushNotificationJob, args: [ "ActionNativePush::Notification", @notification.as_json, action_native_push_devices(:pixel9) ]
+      assert_enqueued_with job: ApplicationPushNotificationJob, args: [ "ActionNativePush::Notification", @notification.as_json, action_native_push_devices(:iphone) ]
+    end
 
-      perform_enqueued_jobs only: ActionNativePush::NotificationDeliveryJob do
-        @notification.deliver_later_to(action_native_push_devices(:iphone))
-      end
-      assert callback_called, "Expected before_delivery callback to be called"
-    ensure
-      Notification.before_delivery = previous_before_delivery
+    test "as_json" do
+      notification = ActionNativePush::Notification
+        .with_apple(category: "readable")
+        .with_google(notification: { collapse_key: "1" })
+        .with_data(badge: "1")
+        .new \
+          title: "Hi!",
+          body: "This is a push notification",
+          badge: 1,
+          thread_id: "12345",
+          sound: "default",
+          high_priority: false,
+          calendar_id: 1
+
+      expected = \
+        {
+          title: "Hi!",
+          body: "This is a push notification",
+          badge: 1,
+          thread_id: "12345",
+          sound: "default",
+          high_priority: false,
+          apple_data: { category: "readable" },
+          google_data: { notification: { collapse_key: "1" } },
+          data: { badge: "1" },
+          calendar_id: 1
+        }
+      assert_equal(expected, notification.as_json)
     end
 
     private
@@ -87,11 +71,7 @@ module ActionNativePush
           thread_id: "12345",
           sound: "default",
           high_priority: false,
-          service_payload: {
-            apns: { category: "readable" },
-            fcm:  nil
-          },
-          custom_payload: { person: "Jacopo", extras: nil }
+          calendar_id: 1
       end
   end
 end
