@@ -173,7 +173,7 @@ device = ApplicationPushDevice.create! \
 
 notification = ApplicationPushNotification.new \
   title: "Hello world!",
-  body:  "Welcome to Action Native Push",
+  body:  "Welcome to Action Native Push"
 
 notification.deliver_later_to(device)
 ```
