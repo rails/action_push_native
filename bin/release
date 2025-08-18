@@ -2,6 +2,12 @@
 
 VERSION=$1
 
+if [ -z "$VERSION" ]; then
+  echo "Error: VERSION argument required"
+  echo "Usage: $0 VERSION"
+  exit 1
+fi
+
 printf "module ActionNativePush\n  VERSION = \"$VERSION\"\nend\n" > ./lib/action_native_push/version.rb
 bundle
 git add Gemfile.lock lib/action_native_push/version.rb
