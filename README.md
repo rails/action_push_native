@@ -313,8 +313,8 @@ end
 | :thread_id       | The thread identifier for grouping notifications.
 | :sound           | The sound to play when the notification is received.
 | :high_priority   | Whether the notification should be sent with high priority (default: true).
-| :google_data     | The Apple-specific payload for the notification.
-| :apple_data      | The Google-specific payload for the notification.
+| :google_data     | The Google-specific payload for the notification.
+| :apple_data      | The Apple-specific payload for the notification.
 | :data            | The data payload for the notification, sent to all platforms.
 | **               | Any additional attributes passed to the constructor will be merged in the `context` hash.
 
