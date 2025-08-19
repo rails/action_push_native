@@ -211,13 +211,10 @@ need to send additional data that is specific to the platform you are using.
 You can use `with_apple` for Apple and `with_google` for Google:
 
 ```ruby
-apple_notification = ApplicationPushNotification
+notification = ApplicationPushNotification
   .with_apple(category: "observable")
+  .with_google(data: { badge: 1 })
   .new(title: "Hi Apple")
-
-google_notification = ApplicationPushNotification
-  .with_google({ data: { badge: 1 } })
-  .new(title: "Hi Google")
 ```
 
 The platform payload takes precedence over the other fields, and you can use it to override the
@@ -225,7 +222,7 @@ default behaviour:
 
 ```ruby
 notification = ApplicationPushNotification
-  .with_google({ android: { notification: { notification_count: nil } } })
+  .with_google(android: { notification: { notification_count: nil } })
   .new(title: "Hello world!", body: "Welcome to Action Native Push", badge: 1)
 ```
 
