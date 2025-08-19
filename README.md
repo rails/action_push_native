@@ -234,7 +234,7 @@ and `body`.
 You can create a silent notification via the `silent` method:
 
 ```ruby
-notification = ApplicationPushNotification.silent.with_data({ id: 1 })
+notification = ApplicationPushNotification.silent.with_data(id: 1)
 ```
 
 This will create a silent notification for both Apple and Google platforms and sets an application
@@ -271,9 +271,9 @@ by adding extra arguments to the notification constructor:
   data = { calendar_id: @calendar.id, identity_id: @identity.id }
 
   notification = CalendarPushNotification
-    .with_apple({ custom_payload: data })
-    .with_google({ data: data })
-    .new({ calendar_id: 123 })
+    .with_apple(custom_payload: data)
+    .with_google(data: data)
+    .new(calendar_id: 123)
 
   notification.deliver_later_to(device)
 ```
