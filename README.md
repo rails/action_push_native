@@ -214,7 +214,7 @@ You can use `with_apple` for Apple and `with_google` for Google:
 notification = ApplicationPushNotification
   .with_apple(category: "observable")
   .with_google(data: { badge: 1 })
-  .new(title: "Hi Apple")
+  .new(title: "Hello world!")
 ```
 
 The platform payload takes precedence over the other fields, and you can use it to override the
