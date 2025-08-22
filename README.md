@@ -306,7 +306,7 @@ end
 |------------------|------------
 | :title           | The title of the notification.
 | :body            | The body of the notification.
-| :badge           | The badge number to display on the app icon
+| :badge           | The badge number to display on the app icon.
 | :thread_id       | The thread identifier for grouping notifications.
 | :sound           | The sound to play when the notification is received.
 | :high_priority   | Whether the notification should be sent with high priority (default: true).
