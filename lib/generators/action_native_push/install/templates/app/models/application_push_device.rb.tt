@@ -1,4 +1,0 @@
-class ApplicationPushDevice < ActionNativePush::Device
-  # Customize TokenError handling (default: destroy!)
-  # rescue_from (ActionNativePush::TokenError) { Rails.logger.error("Device #{id} token is invalid") }
-end

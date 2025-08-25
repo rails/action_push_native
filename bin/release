@@ -8,13 +8,13 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-printf "module ActionNativePush\n  VERSION = \"$VERSION\"\nend\n" > ./lib/action_native_push/version.rb
+printf "module ActionPushNative\n  VERSION = \"$VERSION\"\nend\n" > ./lib/action_push_native/version.rb
 bundle
-git add Gemfile.lock lib/action_native_push/version.rb
+git add Gemfile.lock lib/action_push_native/version.rb
 git commit -m "Bump version for $VERSION"
 git push
 git tag v$VERSION
 git push --tags
-gem build action_native_push
-gem push "action_native_push-$VERSION.gem" --host https://rubygems.org
-rm "action_native_push-$VERSION.gem"
+gem build action_push_native
+gem push "action_push_native-$VERSION.gem" --host https://rubygems.org
+rm "action_push_native-$VERSION.gem"
