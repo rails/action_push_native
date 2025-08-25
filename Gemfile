@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in action_native_push.gemspec.
+# Specify your gem's dependencies in action_push_native.gemspec.
 gemspec
 
 gem "sqlite3"

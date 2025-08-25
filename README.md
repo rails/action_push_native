@@ -1,13 +1,13 @@
-# Action Native Push
+# Action Push Native
 
-Action Native Push is a Rails push notification gem for mobile platforms, supporting APNs (Apple) and FCM (Google).
+Action Push Native is a Rails push notification gem for mobile platforms, supporting APNs (Apple) and FCM (Google).
 
 ## Installation
 
 ```bash
-1. bundle add action_native_push
-2. bin/rails g action_native_push:install
-3. bin/rails action_native_push:install:migrations
+1. bundle add action_push_native
+2. bin/rails g action_push_native:install
+3. bin/rails action_push_native:install:migrations
 4. bin/rails db:migrate
 ```
 
@@ -25,7 +25,7 @@ The installation will create:
 `app/models/application_push_notification.rb`:
 
 ```ruby
-class ApplicationPushNotification < ActionNativePush::Notification
+class ApplicationPushNotification < ActionPushNative::Notification
   # Set a custom job queue_name
   queue_as :realtime
 
@@ -45,7 +45,7 @@ you can change the application defaults by editing it directly.
 `app/jobs/application_push_notification_job.rb`:
 
 ```ruby
-class ApplicationPushNotificationJob < ActionNativePush::NotificationJob
+class ApplicationPushNotificationJob < ActionPushNative::NotificationJob
   # Enable logging job arguments (default: false)
   self.log_arguments = true
 
@@ -60,9 +60,9 @@ directly in your application.
 `app/models/application_push_device.rb`:
 
 ```ruby
-class ApplicationPushDevice < ActionNativePush::Device
+class ApplicationPushDevice < ActionPushNative::Device
   # Customize TokenError handling (default: destroy!)
-  # rescue_from (ActionNativePush::TokenError) { Rails.logger.error("Device #{id} token is invalid") }
+  # rescue_from (ActionPushNative::TokenError) { Rails.logger.error("Device #{id} token is invalid") }
 end
 ```
 
@@ -173,7 +173,7 @@ device = ApplicationPushDevice.create! \
 
 notification = ApplicationPushNotification.new \
   title: "Hello world!",
-  body:  "Welcome to Action Native Push"
+  body:  "Welcome to Action Push Native"
 
 notification.deliver_later_to(device)
 ```
@@ -200,7 +200,7 @@ You can pass custom data to the application using the `with_data` method:
 ```ruby
 notification = ApplicationPushNotification
   .with_data({ badge: "1" })
-  .new(title: "Welcome to Action Native Push")
+  .new(title: "Welcome to Action Push Native")
 ```
 
 ### Custom platform Payload
@@ -223,7 +223,7 @@ default behaviour:
 ```ruby
 notification = ApplicationPushNotification
   .with_google(android: { notification: { notification_count: nil } })
-  .new(title: "Hello world!", body: "Welcome to Action Native Push", badge: 1)
+  .new(title: "Hello world!", body: "Welcome to Action Push Native", badge: 1)
 ```
 
 This will unset the default `notification_count` (`badge`) field in the Google payload, while keeping `title`
@@ -293,14 +293,14 @@ class CustomDevice
 
   def push(notification)
     notification.token = token
-    ActionNativePush.service_for(platform, notification).push(notification)
-  rescue ActionNativePush::TokenError => error
+    ActionPushNative.service_for(platform, notification).push(notification)
+  rescue ActionPushNative::TokenError => error
     # Custom token error handling
   end
 end
 ```
 
-## `ActionNativePush::Notification` attributes
+## `ActionPushNative::Notification` attributes
 
 | Name           | Description
 |------------------|------------
@@ -326,4 +326,4 @@ end
 
 ## License
 
-Action Native Push is licensed under MIT.
+Action Push Native is licensed under MIT.
