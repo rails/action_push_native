@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    action_native_push (0.1.0)
+    action_native_push (0.1.1)
       activejob (>= 8.0)
       activerecord (>= 8.0)
       apnotic (~> 1.7)
