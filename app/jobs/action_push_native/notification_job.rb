@@ -40,7 +40,7 @@ module ActionPushNative
 
     with_options retry_options do
       retry_on TimeoutError, wait: 1.minute
-      retry_on ConnectionError, ConnectionPool::TimeoutError, attempts: 20
+      retry_on ConnectionError, HTTPX::PoolTimeoutError, attempts: 20
 
       # Altough unexpected, these are short-lived errors that can be retried most of the times.
       retry_on ForbiddenError, BadRequestError

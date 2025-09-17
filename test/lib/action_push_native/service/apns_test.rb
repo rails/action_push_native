@@ -3,105 +3,178 @@ require "test_helper"
 module ActionPushNative
   module Service
     class ApnsTest < ActiveSupport::TestCase
+      include ActiveSupport::Testing::Deprecation
+
       setup do
         @notification = build_notification
+        ActionPushNative::Service::Apns::TokenProvider.any_instance.stubs(:fresh_access_token).returns("fake_token")
         @config = ActionPushNative.config_for(:apple, @notification)
         @apns = Apns.new(@config)
       end
-      teardown { Apns.connection_pools = {} }
 
       test "push" do
-        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
-        Apns.connection_pools = { @config => connection_pool }
+        payload = \
+          {
+            aps: {
+              alert: { title: "Hi!", body: "This is a push notification" },
+              badge: 1,
+              "thread-id": "12345",
+              sound: "default",
+              category: "readable"
+            },
+            person: "Jacopo"
+          }
 
-        @apns.push(@notification)
+        headers = \
+          {
+            "Apns-Priority"=>"5",
+            "Apns-Push-Type"=>"alert",
+            "Apns-Topic"=>"your.bundle.identifier",
+            "Authorization"=>"Bearer fake_token"
+          }
 
-        assert_equal 1, connection_pool.deliveries.size
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          with(body: payload.to_json, headers: headers).
+          to_return(status: 200)
 
-        options = connection_pool.deliveries.first[:options]
-        assert_equal 60, options[:timeout]
+        assert_nothing_raised { @apns.push(@notification) }
+      end
 
-        delivery =  connection_pool.deliveries.first[:notification]
-        assert_equal "your.bundle.identifier", delivery.topic
-        assert_equal "123", delivery.token
-        assert_equal "Hi!", delivery.alert[:title]
-        assert_equal "This is a push notification", delivery.alert[:body]
-        assert_equal 1, delivery.badge
-        assert_equal "12345", delivery.thread_id
-        assert_equal "default", delivery.sound
-        assert_equal "readable", delivery.category
-        assert_equal 5, delivery.priority
-        assert_equal "Jacopo", delivery.custom_payload[:person]
+      test "push silent notification" do
+        notification = ActionPushNative::Notification.silent.with_data(id: "1").new
+        notification.token = "123"
+
+        payload = { aps: { "content-available": 1 }, id: "1" }
+
+        headers = \
+          {
+            "Apns-Priority"=>"5",
+            "Apns-Push-Type"=>"background",
+            "Apns-Topic"=>"your.bundle.identifier",
+            "Authorization"=>"Bearer fake_token"
+          }
+
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          with(body: payload.to_json, headers: headers).
+          to_return(status: 200)
+
+        assert_nothing_raised { @apns.push(notification) }
       end
 
       test "push response error" do
-        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400"))
-        Apns.connection_pools = { @config => connection_pool }
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_return(status: 400)
 
         assert_raises ActionPushNative::BadRequestError do
           @apns.push(@notification)
         end
 
-        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "400", body: { reason: "BadDeviceToken" }))
-        Apns.connection_pools = { @config => connection_pool }
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_return(status: 400, body: { reason: "BadDeviceToken" }.to_json)
 
         assert_raises ActionPushNative::TokenError do
+          @apns.push(@notification)
+        end
+
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_raise(Errno::ECONNRESET.new("Connection reset by peer"))
+
+        assert_raises ActionPushNative::ConnectionError do
           @apns.push(@notification)
         end
       end
 
       test "push apns payload can be overridden" do
-        connection_pool = FakeConnectionPool.new(FakeResponse.new(status: "200"))
-        high_priority = 10
-        Apns.connection_pools = { @config => connection_pool }
-        @notification.apple_data = { priority: high_priority, "thread-id": "changed", custom_payload: nil }
+        @notification.apple_data = { aps: { "thread-id": "changed" } }
 
+        payload = \
+          {
+            aps: {
+              alert: { title: "Hi!", body: "This is a push notification" },
+              badge: 1,
+              "thread-id": "changed",
+              sound: "default"
+            },
+            person: "Jacopo"
+          }
+
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          with(body: payload.to_json).
+          to_return(status: 200)
+
+        assert_nothing_raised { @apns.push(@notification) }
+      end
+
+      test "push apns headers can be overridden" do
+        @notification.apple_data = { "apns-priority": 10, "apns-expiration": 20 }
+
+        payload = \
+          {
+            aps: {
+              alert: { title: "Hi!", body: "This is a push notification" },
+              badge: 1,
+              "thread-id": "12345",
+              sound: "default"
+            },
+            person: "Jacopo"
+          }
+
+        headers = { "apns-priority": 10, "apns-expiration": 20 }
+
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          with(body: payload.to_json, headers: headers).
+          to_return(status: 200)
+
+        assert_nothing_raised do
+          @apns.push(@notification)
+        end
+      end
+
+      test "apnotic legacy format compatibility" do
+        @notification.apple_data = { priority: 10, alert: { title: "Overridden!", body: nil }, custom_payload: { person: "Rosa" } }
+
+        payload = \
+          {
+            aps: {
+              alert: { title: "Overridden!" },
+              badge: 1,
+              "thread-id": "12345",
+              sound: "default"
+            },
+            person: "Rosa"
+          }
+
+        headers = { "apns-priority": 10 }
+
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          with(body: payload.to_json, headers: headers).
+          to_return(status: 200)
+
+        assert_nothing_raised do
+          assert_deprecated(/field directly is deprecated/, ActionPushNative.deprecator) do
+            @apns.push(@notification)
+          end
+        end
+      end
+
+      test "access tokens are refreshed every 30 minutes" do
+        stub_request(:post, "https://api.push.apple.com/3/device/123")
+        ActionPushNative::Service::Apns::TokenProvider.any_instance.unstub(:fresh_access_token)
+
+        ActionPushNative::Service::Apns::TokenProvider.any_instance.stubs(:generate).once.returns("fake_token")
+        @apns.push(@notification)
         @apns.push(@notification)
 
-        delivery =  connection_pool.deliveries.first[:notification]
-        assert_equal high_priority, delivery.priority
-        assert_equal "changed", delivery.thread_id
-        assert_nil delivery.custom_payload
+        ActionPushNative::Service::Apns::TokenProvider.any_instance.stubs(:generate).once.returns("new_fake_token")
+        travel 31.minutes do
+          @apns.push(@notification)
+        end
       end
 
       private
-        class FakeConnectionPool
-          attr_reader :deliveries
-
-          def initialize(response)
-            @response = response
-            @deliveries = []
-          end
-
-          def with
-            yield self
-          end
-
-          def push(notification, options = {})
-            deliveries.push(notification:, options:)
-            response
-          end
-
-          private
-            attr_reader :response
-        end
-
-        class FakeResponse
-          attr_reader :status, :body
-
-          def initialize(status:, body: {})
-            @status = status
-            @body = body.stringify_keys
-          end
-
-          def ok?
-            status.start_with?("20")
-          end
-        end
-
         def build_notification
           ActionPushNative::Notification
-            .with_apple(category: "readable")
+            .with_apple(aps: { category: "readable" })
             .with_data(person: "Jacopo")
             .new(
               title: "Hi!",
