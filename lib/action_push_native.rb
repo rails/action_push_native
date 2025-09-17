@@ -4,8 +4,9 @@ require "zeitwerk"
 require "action_push_native/engine"
 require "action_push_native/errors"
 require "net/http"
-require "apnotic"
+require "httpx"
 require "googleauth"
+require "jwt"
 
 loader= Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
 loader.ignore("#{__dir__}/generators")
@@ -36,5 +37,9 @@ module ActionPushNative
     else
       platform_config
     end
+  end
+
+  def self.deprecator
+    @deprecator ||= ActiveSupport::Deprecation.new
   end
 end

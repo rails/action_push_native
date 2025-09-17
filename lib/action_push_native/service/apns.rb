@@ -3,118 +3,114 @@
 module ActionPushNative
   module Service
     class Apns
-      DEFAULT_TIMEOUT   = 30.seconds
-      DEFAULT_POOL_SIZE = 5
-
       def initialize(config)
         @config = config
       end
 
-      # Per-application connection pools
-      cattr_accessor :connection_pools
+      # Per-application HTTPX session
+      cattr_accessor :httpx_sessions
 
       def push(notification)
-        reset_connection_error
+        notification.apple_data = ApnoticLegacyConverter.convert(notification.apple_data) if notification.apple_data.present?
 
-        connection_pool.with do |connection|
-          rescue_and_reraise_network_errors do
-            apnotic_notification = apnotic_notification_from(notification)
-            Rails.logger.info("Pushing APNs notification: #{apnotic_notification.apns_id}")
-
-            response = connection.push \
-              apnotic_notification,
-              timeout: config[:request_timeout] || DEFAULT_TIMEOUT
-            raise connection_error if connection_error
-            handle_response_error(response) unless response&.ok?
-          end
-        end
+        headers, payload = headers_from(notification), payload_from(notification)
+        Rails.logger.info("Pushing APNs notification: #{headers[:"apns-id"]}")
+        response = httpx_session.post("https://api.push.apple.com/3/device/#{notification.token}", json: payload, headers: headers)
+        handle_error(response) if response.error
       end
 
       private
-        attr_reader :config, :connection_error
+        attr_reader :config
 
-        def reset_connection_error
-          @connection_error = nil
+        PRIORITIES = { high: 10, normal: 5 }.freeze
+        HEADERS = %i[ apns-id apns-push-type apns-priority apns-topic apns-expiration apns-collapse-id ].freeze
+
+        def headers_from(notification)
+          push_type = notification.apple_data&.dig(:aps, :"content-available") == 1 ? "background" : "alert"
+          custom_apple_headers = notification.apple_data&.slice(*HEADERS) || {}
+
+          {
+            "apns-push-type": push_type,
+            "apns-id": SecureRandom.uuid,
+            "apns-priority": notification.high_priority ? PRIORITIES[:high] : PRIORITIES[:normal],
+            "apns-topic": config.fetch(:topic)
+          }.merge(custom_apple_headers).compact
         end
 
-        def connection_pool
-          self.class.connection_pools ||= {}
-          self.class.connection_pools[config] ||= build_connection_pool
+        def payload_from(notification)
+          payload = \
+            {
+              aps: {
+                alert: { title: notification.title, body: notification.body },
+                badge: notification.badge,
+                "thread-id": notification.thread_id,
+                sound: notification.sound
+              }
+            }
+
+          payload = payload.merge notification.data if notification.data.present?
+          custom_apple_payload = notification.apple_data&.except(*HEADERS) || {}
+          payload = payload.deep_merge custom_apple_payload
+
+          payload.dig(:aps, :alert)&.compact!
+          payload[:aps]&.compact_blank!
+          payload.compact
         end
 
-        def build_connection_pool
-          build_method = config[:connect_to_development_server] ? "development" : "new"
-          Apnotic::ConnectionPool.public_send(build_method, {
-            auth_method: :token,
-            cert_path: StringIO.new(config.fetch(:encryption_key)),
-            key_id: config.fetch(:key_id),
-            team_id: config.fetch(:team_id)
-          }, size: config[:connection_pool_size] || DEFAULT_POOL_SIZE) do |connection|
-            # Prevents the main thread from crashing collecting the connection error from the off-thread
-            # and raising it afterwards.
-            connection.on(:error) { |error| @connection_error = error }
+        def httpx_session
+          self.class.httpx_sessions ||= {}
+          self.class.httpx_sessions[config] ||= HttpxSession.new(config)
+        end
+
+        def handle_error(response)
+          if response.is_a?(HTTPX::ErrorResponse)
+            handle_network_error(response.error)
+          else
+            handle_apns_error(response)
           end
         end
 
-        def rescue_and_reraise_network_errors
-          begin
-            yield
-          rescue Errno::ETIMEDOUT => e
-            raise ActionPushNative::TimeoutError, e.message
-          rescue Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError => e
-            raise ActionPushNative::ConnectionError, e.message
-          rescue OpenSSL::SSL::SSLError => e
-            if e.message.include?("SSL_connect")
-              raise ActionPushNative::ConnectionError, e.message
+        def handle_network_error(error)
+          case error
+          when Errno::ETIMEDOUT, HTTPX::TimeoutError
+            raise ActionPushNative::TimeoutError, error.message
+          when Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED, Errno::EHOSTUNREACH,
+               SocketError, IOError, EOFError, Errno::EPIPE, Errno::EINVAL, HTTPX::ConnectionError,
+               HTTPX::TLSError, HTTPX::Connection::HTTP2::Error
+            raise ActionPushNative::ConnectionError, error.message
+          when OpenSSL::SSL::SSLError
+            if error.message.include?("SSL_connect")
+              raise ActionPushNative::ConnectionError, error.message
             else
               raise
             end
           end
         end
 
-        PRIORITIES = { high: 10, normal: 5 }.freeze
+        def handle_apns_error(response)
+          status = response.status
+          reason = JSON.parse(response.body.to_s)["reason"] unless response.body.empty?
 
-        def apnotic_notification_from(notification)
-          Apnotic::Notification.new(notification.token).tap do |n|
-            n.topic = config.fetch(:topic)
-            n.alert = { title: notification.title, body: notification.body }.compact
-            n.badge = notification.badge
-            n.thread_id = notification.thread_id
-            n.sound = notification.sound
-            n.priority = notification.high_priority ? PRIORITIES[:high] : PRIORITIES[:normal]
-            n.custom_payload = notification.data
-            notification.apple_data&.each do |key, value|
-              n.public_send("#{key.to_s.underscore}=", value)
-            end
-          end
-        end
+          Rails.logger.error("APNs response error #{status}: #{reason}") if reason
 
-        def handle_response_error(response)
-          code = response&.status
-          reason = response.body["reason"] if response
-
-          Rails.logger.error("APNs response error #{code}: #{reason}") if reason
-
-          case [ code, reason ]
-          in [ nil, _ ]
-            raise ActionPushNative::TimeoutError
-          in [ "400", "BadDeviceToken" ]
+          case [ status, reason ]
+          in [ 400, "BadDeviceToken" ]
             raise ActionPushNative::TokenError, reason
-          in [ "400", "DeviceTokenNotForTopic" ]
+          in [ 400, "DeviceTokenNotForTopic" ]
             raise ActionPushNative::BadDeviceTopicError, reason
-          in [ "400", _ ]
+          in [ 400, _ ]
             raise ActionPushNative::BadRequestError, reason
-          in [ "403", _ ]
+          in [ 403, _ ]
             raise ActionPushNative::ForbiddenError, reason
-          in [ "404", _ ]
+          in [ 404, _ ]
             raise ActionPushNative::NotFoundError, reason
-          in [ "410", _ ]
+          in [ 410, _ ]
             raise ActionPushNative::TokenError, reason
-          in [ "413", _ ]
+          in [ 413, _ ]
             raise ActionPushNative::PayloadTooLargeError, reason
-          in [ "429", _ ]
+          in [ 429, _ ]
             raise ActionPushNative::TooManyRequestsError, reason
-          in [ "503", _ ]
+          in [ 503, _ ]
             raise ActionPushNative::ServiceUnavailableError, reason
           else
             raise ActionPushNative::InternalServerError, reason
