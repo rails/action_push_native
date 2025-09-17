@@ -212,7 +212,7 @@ You can use `with_apple` for Apple and `with_google` for Google:
 
 ```ruby
 notification = ApplicationPushNotification
-  .with_apple(category: "observable")
+  .with_apple(aps: { category: "observable", "thread-id": "greeting"}, "apns-priority": "1")
   .with_google(data: { badge: 1 })
   .new(title: "Hello world!")
 ```
@@ -234,7 +234,7 @@ and `body`.
 You can create a silent notification via the `silent` method:
 
 ```ruby
-notification = ApplicationPushNotification.silent.with_data(id: 1)
+notification = ApplicationPushNotification.silent.with_data(id: 1).new
 ```
 
 This will create a silent notification for both Apple and Google platforms and sets an application
@@ -271,7 +271,7 @@ by adding extra arguments to the notification constructor:
   data = { calendar_id: @calendar.id, identity_id: @identity.id }
 
   notification = CalendarPushNotification
-    .with_apple(custom_payload: data)
+    .with_apple(data)
     .with_google(data: data)
     .new(calendar_id: 123)
 
@@ -311,7 +311,7 @@ end
 | :sound           | The sound to play when the notification is received.
 | :high_priority   | Whether the notification should be sent with high priority (default: true).
 | :google_data     | The Google-specific payload for the notification.
-| :apple_data      | The Apple-specific payload for the notification.
+| :apple_data      | The Apple-specific payload for the notification. It can also be used to override APNs request headers, such as `apns-push-type`, `apns-priority`, etc.
 | :data            | The data payload for the notification, sent to all platforms.
 | **               | Any additional attributes passed to the constructor will be merged in the `context` hash.
 
@@ -320,7 +320,7 @@ end
 | Name           | Description
 |------------------|------------
 | :with_apple           | Set the Apple-specific payload for the notification.
-| :with_google          | Set the Google-specific payload for the notification.
+| :with_google          | Set the Google-specific payload for the notification. It can also be used to override APNs request headers, such as `apns-push-type`, `apns-priority`, etc.
 | :with_data            | Set the data payload for the notification, sent to all platforms.
 | :silent               | Create a silent notification that does not trigger a visual alert on the device.
 
