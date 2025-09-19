@@ -35,7 +35,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activerecord", rails_version
   spec.add_dependency "activejob", rails_version
   spec.add_dependency "railties", rails_version
-  spec.add_dependency "apnotic", "~> 1.7"
+  spec.add_dependency "httpx", "~> 1.6"
+  spec.add_dependency "jwt", ">= 2"
   spec.add_dependency "googleauth", "~> 1.14"
   spec.add_dependency "net-http", "~> 0.6"
 end

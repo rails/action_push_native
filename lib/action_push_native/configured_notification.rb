@@ -16,7 +16,7 @@ module ActionPushNative
 
     def silent
       @options = options.merge(high_priority: false)
-      with_apple(content_available: 1)
+      with_apple(aps: { "content-available": 1 })
     end
 
     def with_apple(apple_data)
