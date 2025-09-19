@@ -36,7 +36,7 @@ module ActionPushNative
 
     test "Socket errors are retried" do
       device = action_push_native_devices(:pixel9)
-      Net::HTTP.any_instance.stubs(:request).raises(Socket::ResolutionError)
+      Net::HTTP.any_instance.stubs(:request).raises(SocketError)
       ActionPushNative::Service::Fcm.any_instance.stubs(:access_token).returns("fake_access_token")
 
       assert_enqueued_jobs 1, only: ActionPushNative::NotificationJob do
