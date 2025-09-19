@@ -75,8 +75,8 @@ shared:
   apple:
     # Token auth params
     # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-    key_id: your_key_id
-    encryption_key: your_apple_encryption_key
+    key_id: <%= Rails.application.credentials.dig(:action_push_native, :apns, :key_id) %>
+    encryption_key: <%= Rails.application.credentials.dig(:action_push_native, :apns, :encryption_key) %>
 
     team_id: your_apple_team_id
     # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
@@ -85,7 +85,7 @@ shared:
   google:
     # Your Firebase project service account credentials
     # See https://firebase.google.com/docs/cloud-messaging/auth-server
-    encryption_key: your_service_account_json_file
+    encryption_key: <%= Rails.application.credentials.dig(:action_push_native, :fcm, :encryption_key) %>
 
     # Firebase project_id
     project_id: your_project_id
@@ -130,16 +130,16 @@ shared:
     calendar:
       # Token auth params
       # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-      key_id: calendar_key_id
-      encryption_key: calendar_apple_encryption_key
+      key_id: <%= Rails.application.credentials.dig(:action_push_native, :apns, :calendar, :key_id) %>
+      encryption_key: <%= Rails.application.credentials.dig(:action_push_native, :apns, :calendar, :encryption_key) %>
       # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
       topic: calendar.bundle.identifier
 
     email:
       # Token auth params
       # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-      key_id: email_key_id
-      encryption_key: email_apple_encryption_key
+      key_id: <%= Rails.application.credentials.dig(:action_push_native, :apns, :email, :key_id) %>
+      encryption_key: <%= Rails.application.credentials.dig(:action_push_native, :apns, :email, :encryption_key) %>
       # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
       topic: email.bundle.identifier
 
@@ -147,7 +147,7 @@ shared:
     calendar:
       # Your Firebase project service account credentials
       # See https://firebase.google.com/docs/cloud-messaging/auth-server
-      encryption_key: calendar_service_account_json_file
+      encryption_key: <%= Rails.application.credentials.dig(:action_push_native, :fcm, :calendar, :encryption_key) %>
 
       # Firebase project_id
       project_id: calendar_project_id
@@ -155,7 +155,7 @@ shared:
     email:
       # Your Firebase project service account credentials
       # See https://firebase.google.com/docs/cloud-messaging/auth-server
-      encryption_key: email_service_account_json_file
+      encryption_key: <%= Rails.application.credentials.dig(:action_push_native, :fcm, :email, :encryption_key) %>
 
       # Firebase project_id
       project_id: email_project_id

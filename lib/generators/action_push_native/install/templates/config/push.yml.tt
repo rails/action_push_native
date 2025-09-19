@@ -1,9 +1,10 @@
 shared:
+  # Use bin/rails credentials:edit to set the apns secrets (as action_push_native:apns:key_id|encryption_key)
   apple:
     # Token auth params
     # See https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns
-    key_id: your_key_id
-    encryption_key: your_apple_encryption_key
+    key_id: <%%= Rails.application.credentials.dig(:action_push_native, :apns, :key_id) %>
+    encryption_key: <%%= Rails.application.credentials.dig(:action_push_native, :apns, :encryption_key) %>
 
     team_id: your_apple_team_id
     # Your identifier found on https://developer.apple.com/account/resources/identifiers/list
@@ -20,12 +21,13 @@ shared:
     # Please note that anything built directly from Xcode and loaded on your phone will have
     # the app generate DEVELOPMENT tokens, while everything else (TestFlight, Apple Store, ...)
     # will be considered as PRODUCTION environment.
-    # connect_to_development_server: <%# Rails.env.development? %>
+    # connect_to_development_server: <%%# Rails.env.development? %>
 
+  # Use bin/rails credentials:edit to set the fcm secrets (as action_push_native:fcm:encryption_key)
   google:
     # Your Firebase project service account credentials
     # See https://firebase.google.com/docs/cloud-messaging/auth-server
-    encryption_key: your_service_account_json_file
+    encryption_key: <%%= Rails.application.credentials.dig(:action_push_native, :fcm, :encryption_key) %>
 
     # Firebase project_id
     project_id: your_project_id
