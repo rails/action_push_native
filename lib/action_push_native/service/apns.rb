@@ -15,7 +15,7 @@ module ActionPushNative
 
         headers, payload = headers_from(notification), payload_from(notification)
         Rails.logger.info("Pushing APNs notification: #{headers[:"apns-id"]}")
-        response = httpx_session.post("https://api.push.apple.com/3/device/#{notification.token}", json: payload, headers: headers)
+        response = httpx_session.post("3/device/#{notification.token}", json: payload, headers: headers)
         handle_error(response) if response.error
       end
 
