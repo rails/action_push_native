@@ -171,6 +171,12 @@ module ActionPushNative
         end
       end
 
+      test "connect to APNs development server" do
+        apns = Apns.new(@config.merge(connect_to_development_server: true))
+        stub_request(:post, "https://api.sandbox.push.apple.com/3/device/123").to_return(status: 200)
+        assert_nothing_raised { apns.push(@notification) }
+      end
+
       private
         def build_notification
           ActionPushNative::Notification
