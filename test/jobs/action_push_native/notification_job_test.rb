@@ -38,7 +38,9 @@ module ActionPushNative
       device = action_push_native_devices(:pixel9)
       stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
         to_raise(SocketError.new)
-      ActionPushNative::Service::Fcm.any_instance.stubs(:access_token).returns("fake_access_token")
+      authorizer = stub("authorizer")
+      authorizer.stubs(:fetch_access_token!).returns({ "access_token" => "fake_access_token", "expires_in" => 3599 })
+      Google::Auth::ServiceAccountCredentials.stubs(:make_creds).returns(authorizer)
 
       assert_enqueued_jobs 1, only: ActionPushNative::NotificationJob do
         ActionPushNative::NotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)

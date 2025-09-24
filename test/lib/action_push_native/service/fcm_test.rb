@@ -74,6 +74,22 @@ module ActionPushNative
         end
       end
 
+      test "access tokens are refreshed" do
+        @fcm.httpx_sessions = {}
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send")
+
+        authorizer = stub("authorizer")
+        authorizer.stubs(:fetch_access_token!).once.returns({ "access_token" => "fake_access_token", "expires_in" => 3599 })
+        Google::Auth::ServiceAccountCredentials.stubs(:make_creds).returns(authorizer)
+        @fcm.push(@notification)
+        @fcm.push(@notification)
+
+        authorizer.stubs(:fetch_access_token!).once.returns({ "access_token" => "fake_access_token", "expires_in" => 3599 })
+        travel 3600 do
+          @fcm.push(@notification)
+        end
+      end
+
       private
         def build_notification
           ActionPushNative::Notification.
@@ -93,7 +109,7 @@ module ActionPushNative
 
         def stub_authorizer
           authorizer = stub("authorizer")
-          authorizer.stubs(:fetch_access_token!).returns({ "access_token" => "fake_access_token" })
+          authorizer.stubs(:fetch_access_token!).returns({ "access_token" => "fake_access_token", "expires_in" => 3599 })
           Google::Auth::ServiceAccountCredentials.stubs(:make_creds).returns(authorizer)
         end
     end
