@@ -3,12 +3,14 @@
 module ActionPushNative
   module Service
     class Apns
-      def initialize(config)
-        @config = config
-      end
+      include NetworkErrorHandling
 
       # Per-application HTTPX session
       cattr_accessor :httpx_sessions
+
+      def initialize(config)
+        @config = config
+      end
 
       def push(notification)
         notification.apple_data = ApnoticLegacyConverter.convert(notification.apple_data) if notification.apple_data.present?
@@ -67,23 +69,6 @@ module ActionPushNative
             handle_network_error(response.error)
           else
             handle_apns_error(response)
-          end
-        end
-
-        def handle_network_error(error)
-          case error
-          when Errno::ETIMEDOUT, HTTPX::TimeoutError
-            raise ActionPushNative::TimeoutError, error.message
-          when Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED, Errno::EHOSTUNREACH,
-               SocketError, IOError, EOFError, Errno::EPIPE, Errno::EINVAL, HTTPX::ConnectionError,
-               HTTPX::TLSError, HTTPX::Connection::HTTP2::Error
-            raise ActionPushNative::ConnectionError, error.message
-          when OpenSSL::SSL::SSLError
-            if error.message.include?("SSL_connect")
-              raise ActionPushNative::ConnectionError, error.message
-            else
-              raise
-            end
           end
         end
 

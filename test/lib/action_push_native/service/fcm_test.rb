@@ -49,7 +49,14 @@ module ActionPushNative
           @fcm.push(@notification)
         end
 
-        Net::HTTP.stubs(:start).raises(OpenSSL::SSL::SSLError.new("SSL_connect returned=1 errno=0 state=error"))
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 500, body: "Not a JSON")
+        assert_raises ActionPushNative::InternalServerError do
+          @fcm.push(@notification)
+        end
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_raise(OpenSSL::SSL::SSLError.new("SSL_connect returned=1 errno=0 state=error"))
         assert_raises ActionPushNative::ConnectionError do
           @fcm.push(@notification)
         end
