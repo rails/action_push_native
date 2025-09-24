@@ -3,7 +3,6 @@
 require "zeitwerk"
 require "action_push_native/engine"
 require "action_push_native/errors"
-require "net/http"
 require "httpx"
 require "googleauth"
 require "jwt"

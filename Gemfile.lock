@@ -7,7 +7,6 @@ PATH
       googleauth (~> 1.14)
       httpx (~> 1.6)
       jwt (>= 2)
-      net-http (~> 0.6)
       railties (>= 8.0)
 
 GEM

@@ -3,21 +3,40 @@
 module ActionPushNative
   module Service
     class Fcm
-      # FCM suggests at least a 10s timeout for requests, we set 15 to add some buffer.
-      # https://firebase.google.com/docs/cloud-messaging/scale-fcm#timeouts
-      DEFAULT_TIMEOUT = 15.seconds
+      include NetworkErrorHandling
+
+      # Per-application HTTPX session
+      cattr_accessor :httpx_sessions
 
       def initialize(config)
         @config = config
       end
 
       def push(notification)
-        response = post_request payload_from(notification)
-        handle_error(response) unless response.code == "200"
+        response = httpx_session.post("v1/projects/#{config.fetch(:project_id)}/messages:send", json: payload_from(notification), headers: { authorization: "Bearer #{access_token}" })
+        handle_error(response) if response.error
       end
 
       private
         attr_reader :config
+
+        def httpx_session
+          self.class.httpx_sessions ||= {}
+          self.class.httpx_sessions[config] ||= build_httpx_session
+        end
+
+        # FCM suggests at least a 10s timeout for requests, we set 15 to add some buffer.
+        # https://firebase.google.com/docs/cloud-messaging/scale-fcm#timeouts
+        DEFAULT_REQUEST_TIMEOUT = 15.seconds
+        DEFAULT_POOL_SIZE       = 5
+
+        def build_httpx_session
+          HTTPX.
+            plugin(:persistent, close_on_fork: true).
+            with(timeout: { request_timeout: config[:request_timeout] || DEFAULT_REQUEST_TIMEOUT }).
+            with(pool_options: { max_connections: config[:connection_pool_size] || DEFAULT_POOL_SIZE }).
+            with(origin: "https://fcm.googleapis.com")
+        end
 
         def payload_from(notification)
           deep_compact({
@@ -56,34 +75,6 @@ module ActionPushNative
           hash.compact.transform_values(&:to_s)
         end
 
-        def post_request(payload)
-          uri = URI("https://fcm.googleapis.com/v1/projects/#{config.fetch(:project_id)}/messages:send")
-          request = Net::HTTP::Post.new(uri)
-          request["Authorization"] = "Bearer #{access_token}"
-          request["Content-Type"]  = "application/json"
-          request.body             = payload.to_json
-
-          rescue_and_reraise_network_errors do
-            Net::HTTP.start(uri.host, uri.port, use_ssl: true, read_timeout: config[:request_timeout] || DEFAULT_TIMEOUT) do |http|
-              http.request(request)
-            end
-          end
-        end
-
-        def rescue_and_reraise_network_errors
-          yield
-        rescue Net::ReadTimeout, Net::OpenTimeout => e
-          raise ActionPushNative::TimeoutError, e.message
-        rescue Errno::ECONNRESET, SocketError => e
-          raise ActionPushNative::ConnectionError, e.message
-        rescue OpenSSL::SSL::SSLError => e
-          if e.message.include?("SSL_connect")
-            raise ActionPushNative::ConnectionError, e.message
-          else
-            raise
-          end
-        end
-
         def access_token
           authorizer = Google::Auth::ServiceAccountCredentials.make_creds \
             json_key_io: StringIO.new(config.fetch(:encryption_key)),
@@ -92,28 +83,36 @@ module ActionPushNative
         end
 
         def handle_error(response)
-          code = response.code
+          if response.is_a?(HTTPX::ErrorResponse)
+            handle_network_error(response.error)
+          else
+            handle_fcm_error(response)
+          end
+        end
+
+        def handle_fcm_error(response)
+          status = response.status
           reason = \
             begin
-              JSON.parse(response.body).dig("error", "message")
+              JSON.parse(response.body.to_s).dig("error", "message")
             rescue JSON::ParserError
-              response.body
+              response.body.to_s
             end
 
-          Rails.logger.error("FCM response error #{code}: #{reason}")
+          Rails.logger.error("FCM response error #{status}: #{reason}")
 
           case
           when reason =~ /message is too big/i
             raise ActionPushNative::PayloadTooLargeError, reason
-          when code == "400"
+          when status == 400
             raise ActionPushNative::BadRequestError, reason
-          when code == "404"
+          when status == 404
             raise ActionPushNative::TokenError, reason
-          when code.in?([ "401", "403" ])
+          when status.in?([ 401, 403 ])
             raise ActionPushNative::ForbiddenError, reason
-          when code == "429"
+          when status == 429
             raise ActionPushNative::TooManyRequestsError, reason
-          when code == "503"
+          when status == 503
             raise ActionPushNative::ServiceUnavailableError, reason
           else
             raise ActionPushNative::InternalServerError, reason
