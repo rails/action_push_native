@@ -13,7 +13,7 @@ module ActionPushNative
       end
 
       def push(notification)
-        response = httpx_session.post("v1/projects/#{config.fetch(:project_id)}/messages:send", json: payload_from(notification), headers: { authorization: "Bearer #{access_token}" })
+        response = httpx_session.post("v1/projects/#{config.fetch(:project_id)}/messages:send", json: payload_from(notification))
         handle_error(response) if response.error
       end
 
@@ -22,20 +22,7 @@ module ActionPushNative
 
         def httpx_session
           self.class.httpx_sessions ||= {}
-          self.class.httpx_sessions[config] ||= build_httpx_session
-        end
-
-        # FCM suggests at least a 10s timeout for requests, we set 15 to add some buffer.
-        # https://firebase.google.com/docs/cloud-messaging/scale-fcm#timeouts
-        DEFAULT_REQUEST_TIMEOUT = 15.seconds
-        DEFAULT_POOL_SIZE       = 5
-
-        def build_httpx_session
-          HTTPX.
-            plugin(:persistent, close_on_fork: true).
-            with(timeout: { request_timeout: config[:request_timeout] || DEFAULT_REQUEST_TIMEOUT }).
-            with(pool_options: { max_connections: config[:connection_pool_size] || DEFAULT_POOL_SIZE }).
-            with(origin: "https://fcm.googleapis.com")
+          self.class.httpx_sessions[config] ||= HttpxSession.new(config)
         end
 
         def payload_from(notification)
@@ -73,13 +60,6 @@ module ActionPushNative
 
         def stringify(hash)
           hash.compact.transform_values(&:to_s)
-        end
-
-        def access_token
-          authorizer = Google::Auth::ServiceAccountCredentials.make_creds \
-            json_key_io: StringIO.new(config.fetch(:encryption_key)),
-            scope: "https://www.googleapis.com/auth/firebase.messaging"
-          authorizer.fetch_access_token!["access_token"]
         end
 
         def handle_error(response)
