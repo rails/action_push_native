@@ -20,15 +20,6 @@ Gem::Specification.new do |spec|
     Dir["{app,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.post_install_message = <<-MESSAGE
-
-    DEPRECATION WARNING:
-  ! The "action_native_push" gem has been renamed to "action_push_native".
-  ! See: https://rubygems.org/gems/action_push_native
-  ! And: https://github.com/rails/action_push_native
-
-  MESSAGE
-
   spec.required_ruby_version = '>= 3.2.0'
 
   rails_version = ">= 8.0"
