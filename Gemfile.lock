@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    action_push_native (0.1.0)
+    action_push_native (0.2.0)
       activejob (>= 8.0)
       activerecord (>= 8.0)
       googleauth (~> 1.14)
