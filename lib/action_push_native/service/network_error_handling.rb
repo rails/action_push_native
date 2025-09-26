@@ -3,6 +3,8 @@ module ActionPushNative::Service::NetworkErrorHandling
 
   def handle_network_error(error)
     case error
+    when HTTPX::PoolTimeoutError
+      raise error
     when Errno::ETIMEDOUT, HTTPX::TimeoutError
       raise ActionPushNative::TimeoutError, error.message
     when Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED, Errno::EHOSTUNREACH,
