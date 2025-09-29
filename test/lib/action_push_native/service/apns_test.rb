@@ -86,9 +86,10 @@ module ActionPushNative
         stub_request(:post, "https://api.push.apple.com/3/device/123").
           to_raise(HTTPX::PoolTimeoutError.new(5, "Timed out after 5 seconds while waiting for a connection"))
 
-        assert_raises HTTPX::PoolTimeoutError do
+        error = assert_raises ActionPushNative::ConnectionPoolTimeoutError do
           @apns.push(@notification)
         end
+        assert_equal "Timed out after 5 seconds while waiting for a connection", error.message
       end
 
       test "push apns payload can be overridden" do

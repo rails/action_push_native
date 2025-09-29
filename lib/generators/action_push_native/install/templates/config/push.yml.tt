@@ -11,7 +11,7 @@ shared:
     topic: your.bundle.identifier
 
     # Set this to the number of threads used to process notifications (default: 5).
-    # When the pool size is too small a HTTPX::PoolTimeoutError error will be raised.
+    # When the pool size is too small a ConnectionPoolTimeoutError will be raised.
     # connection_pool_size: 5
 
     # Change the request timeout (default: 30).
@@ -33,7 +33,7 @@ shared:
     project_id: your_project_id
 
     # Set this to the number of threads used to process notifications (default: 5).
-    # When the pool size is too small a HTTPX::PoolTimeoutError error will be raised.
+    # When the pool size is too small a ConnectionPoolTimeoutError will be raised.
     # connection_pool_size: 5
 
     # Change the request timeout (default: 15).
