@@ -3,6 +3,7 @@
 module ActionPushNative
   class TimeoutError < StandardError; end
   class ConnectionError < StandardError; end
+  class ConnectionPoolTimeoutError < StandardError; end
 
   class BadRequestError < StandardError; end
   class ForbiddenError < StandardError; end
