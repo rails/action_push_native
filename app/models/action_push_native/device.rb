@@ -8,7 +8,7 @@ module ActionPushNative
 
     belongs_to :owner, polymorphic: true, optional: true
 
-    enum :platform, { apple: "apple", google: "google" }
+    enum :platform, { apple: "apple", google: "google", web: "web" }
 
     def push(notification)
        notification.token = token

@@ -29,6 +29,11 @@ module ActionPushNative
       self
     end
 
+    def with_web(web_data)
+      @options[:web_data] = @options.fetch(:web_data, {}).merge(web_data)
+      self
+    end
+
     private
       attr_reader :notification_class, :options
   end

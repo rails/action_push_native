@@ -11,3 +11,7 @@ google:
   application:
     encryption_key: your_service_account_json_file
     project_id: your_project_id
+web:
+  application:
+    encryption_key: your_service_account_json_file
+    project_id: your_project_id
