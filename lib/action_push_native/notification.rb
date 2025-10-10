@@ -7,7 +7,7 @@ module ActionPushNative
   class Notification
     extend ActiveModel::Callbacks
 
-    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apple_data, :google_data, :data
+    attr_accessor :title, :body, :badge, :thread_id, :sound, :high_priority, :apple_data, :google_data, :web_data, :data
     attr_accessor :context
     attr_accessor :token
 
@@ -22,7 +22,7 @@ module ActionPushNative
         self.queue_name = name
       end
 
-      delegate :with_data, :silent, :with_apple, :with_google, to: :configured_notification
+      delegate :with_data, :silent, :with_apple, :with_google, :with_web, to: :configured_notification
 
       private
         def configured_notification
@@ -40,11 +40,12 @@ module ActionPushNative
     #   high_priority - Whether to send the notification with high priority (default: true).
     #                   For silent notifications is recommended to set this to false
     #   apple_data - Apple Push Notification Service (APNS) specific data
-    #   google_data - Firebase Cloud Messaging (FCM) specific data
+    #   google_data - Firebase Cloud Messaging (FCM) specific data for Android
+    #   web_data - Firebase Cloud Messaging (FCM) specific data for Web Push
     #   data - Custom data to be sent with the notification
     #
     #   Any extra attributes are set inside the `context` hash.
-    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, apple_data: {}, google_data: {}, data: {}, **context)
+    def initialize(title: nil, body: nil, badge: nil, thread_id: nil, sound: nil, high_priority: true, apple_data: {}, google_data: {}, web_data: {}, data: {}, **context)
       @title = title
       @body = body
       @badge = badge
@@ -53,6 +54,7 @@ module ActionPushNative
       @high_priority = high_priority
       @apple_data = apple_data
       @google_data = google_data
+      @web_data = web_data
       @data = data
       @context = context
     end
@@ -79,6 +81,7 @@ module ActionPushNative
         high_priority: high_priority,
         apple_data: apple_data,
         google_data: google_data,
+        web_data: web_data,
         data: data,
         **context
       }.compact

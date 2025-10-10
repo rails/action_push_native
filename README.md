@@ -1,6 +1,6 @@
 # Action Push Native
 
-Action Push Native is a Rails push notification gem for mobile platforms, supporting APNs (Apple) and FCM (Google).
+Action Push Native is a Rails push notification gem for mobile and web platforms, supporting APNs (Apple) and FCM (Google Android/Web).
 
 ## Installation
 
@@ -89,10 +89,18 @@ shared:
 
     # Firebase project_id
     project_id: your_project_id
+
+  web:
+    # Uses the same Firebase project service account credentials as Android.
+    # See https://firebase.google.com/docs/cloud-messaging/auth-server
+    encryption_key: <%= Rails.application.credentials.dig(:action_push_native, :fcm, :encryption_key)&.dump %>
+
+    # Firebase project_id
+    project_id: your_project_id
 ```
 
 This file contains the configuration for the push notification services you want to use.
-The push notification services supported are `apple` (APNs) and `google` (FCM).
+The push notification services supported are `apple` (APNs), `google` (FCM Android), and `web` (FCM Web Push).
 If you're configuring more than one app, see the section [Configuring multiple apps](#configuring-multiple-apps) below.
 
 ### Configuring multiple apps
@@ -208,12 +216,13 @@ notification = ApplicationPushNotification
 You can configure custom platform payload to be sent with the notification. This is useful when you
 need to send additional data that is specific to the platform you are using.
 
-You can use `with_apple` for Apple and `with_google` for Google:
+You can use `with_apple` for Apple, `with_google` for Android, and `with_web` for Web:
 
 ```ruby
 notification = ApplicationPushNotification
   .with_apple(aps: { category: "observable", "thread-id": "greeting"}, "apns-priority": "1")
   .with_google(data: { badge: 1 })
+  .with_web(webpush: { headers: { TTL: "300" }, data: { url: "https://example.com" } })
   .new(title: "Hello world!")
 ```
 
@@ -223,6 +232,7 @@ default behaviour:
 ```ruby
 notification = ApplicationPushNotification
   .with_google(android: { notification: { notification_count: nil } })
+  .with_web(webpush: { notification: { tag: "custom" } })
   .new(title: "Hello world!", body: "Welcome to Action Push Native", badge: 1)
 ```
 
@@ -278,6 +288,67 @@ by adding extra arguments to the notification constructor:
   notification.deliver_later_to(device)
 ```
 
+### Registering Web Push Devices via API
+
+For web clients (including TWA-backed PWAs), obtain an FCM registration token in the browser and POST it to your backend as a `web` device.
+
+```js
+import { initializeApp } from "firebase/app";
+import { getMessaging, getToken, isSupported } from "firebase/messaging";
+
+const firebaseApp = initializeApp({
+  apiKey: "...",
+  projectId: "...",
+  messagingSenderId: "...",
+  appId: "...",
+});
+
+async function registerPushDevice() {
+  if (!(await isSupported())) return;
+
+  const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+  const messaging = getMessaging(firebaseApp);
+  const token = await getToken(messaging, {
+    serviceWorkerRegistration: registration,
+    vapidKey: "YOUR_WEB_PUSH_CERTIFICATE_KEY_PAIR_VAPID_KEY",
+  });
+
+  if (!token) return;
+
+  await fetch("/push_devices", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      device: {
+        platform: "web",
+        token,
+        name: navigator.userAgent,
+      },
+    }),
+    credentials: "include",
+  });
+}
+```
+
+```ruby
+# app/controllers/push_devices_controller.rb
+class PushDevicesController < ApplicationController
+  protect_from_forgery with: :null_session
+
+  def create
+    device = ApplicationPushDevice.find_or_initialize_by(token: device_params[:token])
+    device.assign_attributes(device_params.merge(owner: current_user))
+    device.save!
+    head :created
+  end
+
+  private
+    def device_params
+      params.require(:device).permit(:platform, :token, :name)
+    end
+end
+```
+
 ### Using a custom Device model
 
 If using the default `ApplicationPushDevice` model does not fit your needs, you can create a custom
@@ -311,6 +382,7 @@ end
 | :sound           | The sound to play when the notification is received.
 | :high_priority   | Whether the notification should be sent with high priority (default: true).
 | :google_data     | The Google-specific payload for the notification.
+| :web_data        | The Web-specific payload for the notification (FCM Web).
 | :apple_data      | The Apple-specific payload for the notification. It can also be used to override APNs request headers, such as `apns-push-type`, `apns-priority`, etc.
 | :data            | The data payload for the notification, sent to all platforms.
 | **               | Any additional attributes passed to the constructor will be merged in the `context` hash.
@@ -321,6 +393,7 @@ end
 |------------------|------------
 | :with_apple           | Set the Apple-specific payload for the notification.
 | :with_google          | Set the Google-specific payload for the notification. It can also be used to override APNs request headers, such as `apns-push-type`, `apns-priority`, etc.
+| :with_web             | Set the Web-specific payload for the notification.
 | :with_data            | Set the data payload for the notification, sent to all platforms.
 | :silent               | Create a silent notification that does not trigger a visual alert on the device.
 

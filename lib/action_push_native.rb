@@ -21,6 +21,8 @@ module ActionPushNative
       Service::Apns.new(platform_config)
     when :google
       Service::Fcm.new(platform_config)
+    when :web
+      Service::FcmWeb.new(platform_config)
     else
       raise "ActionPushNative: '#{platform}' platform is unsupported"
     end

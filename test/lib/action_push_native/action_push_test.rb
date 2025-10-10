@@ -61,6 +61,30 @@ class ActionPushNativeTest < ActiveSupport::TestCase
     assert_equal expected_config, config
   end
 
+  test "config_for web" do
+    stub_config("push_calendar.yml")
+    config = ActionPushNative.config_for :web, CalendarPushNotification.new
+    expected_config = {
+      encryption_key: "your_service_account_json_file",
+      project_id: "your_project_id"
+    }
+    assert_equal expected_config, config
+  end
+
+  test "service_for web" do
+    notification = CalendarPushNotification.new(title: "Hello Web")
+    stub_config("push_calendar.yml")
+
+    service = ActionPushNative.service_for(:web, notification)
+
+    assert_kind_of ActionPushNative::Service::FcmWeb, service
+    expected_config = {
+      encryption_key: "your_service_account_json_file",
+      project_id: "your_project_id"
+    }
+    assert_equal expected_config, service.send(:config)
+  end
+
   private
     def stub_config(name)
       Rails.application.stubs(:config_for).returns(YAML.load_file(file_fixture("config/#{name}"), symbolize_names: true))
