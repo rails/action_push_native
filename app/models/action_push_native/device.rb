@@ -6,6 +6,9 @@ module ActionPushNative
 
     rescue_from(TokenError) { destroy! }
 
+    validates :platform, presence: true
+    validates :token, presence: true
+
     belongs_to :owner, polymorphic: true, optional: true
 
     enum :platform, { apple: "apple", google: "google" }
