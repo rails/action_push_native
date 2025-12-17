@@ -5,8 +5,7 @@ module ActionPushNative
     class Fcm
       include NetworkErrorHandling
 
-      # Per-application HTTPX session
-      cattr_accessor :httpx_sessions
+      HTTPX_SESSIONS_THREAD_KEY = :action_push_native_fcm_httpx_sessions
 
       def initialize(config)
         @config = config
@@ -21,8 +20,8 @@ module ActionPushNative
         attr_reader :config
 
         def httpx_session
-          self.class.httpx_sessions ||= {}
-          self.class.httpx_sessions[config] ||= HttpxSession.new(config)
+          Thread.current[HTTPX_SESSIONS_THREAD_KEY] ||= {}
+          Thread.current[HTTPX_SESSIONS_THREAD_KEY][config] ||= HttpxSession.new(config)
         end
 
         def payload_from(notification)
