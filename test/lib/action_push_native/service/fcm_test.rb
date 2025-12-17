@@ -75,7 +75,8 @@ module ActionPushNative
       end
 
       test "access tokens are refreshed" do
-        @fcm.httpx_sessions = {}
+        Thread.current[ActionPushNative::Service::Fcm::HTTPX_SESSIONS_THREAD_KEY] = {}
+
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send")
 
         authorizer = stub("authorizer")
