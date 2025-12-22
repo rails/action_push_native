@@ -5,8 +5,6 @@ module ActionPushNative
     class Apns
       include NetworkErrorHandling
 
-      HTTPX_SESSIONS_THREAD_KEY = :action_push_native_apns_httpx_sessions
-
       def initialize(config)
         @config = config
       end
@@ -58,9 +56,11 @@ module ActionPushNative
           payload.compact
         end
 
+        HTTPX_SESSIONS_KEY = :action_push_native_apns_httpx_sessions
+
         def httpx_session
-          Thread.current[HTTPX_SESSIONS_THREAD_KEY] ||= {}
-          Thread.current[HTTPX_SESSIONS_THREAD_KEY][config] ||= HttpxSession.new(config)
+          ActiveSupport::IsolatedExecutionState[HTTPX_SESSIONS_KEY] ||= {}
+          ActiveSupport::IsolatedExecutionState[HTTPX_SESSIONS_KEY][config] ||= HttpxSession.new(config)
         end
 
         def handle_error(response)
