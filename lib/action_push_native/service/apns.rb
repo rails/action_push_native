@@ -5,9 +5,6 @@ module ActionPushNative
     class Apns
       include NetworkErrorHandling
 
-      # Per-application HTTPX session
-      cattr_accessor :httpx_sessions
-
       def initialize(config)
         @config = config
       end
@@ -59,9 +56,11 @@ module ActionPushNative
           payload.compact
         end
 
+        HTTPX_SESSIONS_KEY = :action_push_native_apns_httpx_sessions
+
         def httpx_session
-          self.class.httpx_sessions ||= {}
-          self.class.httpx_sessions[config] ||= HttpxSession.new(config)
+          ActiveSupport::IsolatedExecutionState[HTTPX_SESSIONS_KEY] ||= {}
+          ActiveSupport::IsolatedExecutionState[HTTPX_SESSIONS_KEY][config] ||= HttpxSession.new(config)
         end
 
         def handle_error(response)
