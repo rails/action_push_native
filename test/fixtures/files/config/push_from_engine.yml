@@ -1,0 +1,14 @@
+shared:
+  apple:
+    application:
+      key_id: engine_key_id
+      encryption_key: engine_encryption_key
+      team_id: engine_team_id
+      topic: engine.bundle.identifier
+    calendar:
+      key_id: engine_calendar_key_id
+      timeout: 120
+  google:
+    application:
+      encryption_key: engine_service_account
+      project_id: engine_project_id

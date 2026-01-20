@@ -27,7 +27,7 @@ module ActionPushNative
   end
 
   def self.config_for(platform, notification)
-    platform_config = Rails.application.config_for(:push)[platform.to_sym]
+    platform_config = config[platform.to_sym]
     raise "ActionPushNative: '#{platform}' platform is not configured" unless platform_config.present?
 
     if notification.application.present?
@@ -36,6 +36,13 @@ module ActionPushNative
     else
       platform_config
     end
+  end
+
+  def self.config
+    path = Rails.application.paths["config/push"].existent.first
+    raise "ActionPushNative: config/push.yml not found" unless path
+
+    Rails.application.config_for(Pathname.new(path))
   end
 
   def self.deprecator
