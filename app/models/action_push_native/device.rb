@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ActionPushNative
-  class Device < ApplicationRecord
+  class Device < Record
     include ActiveSupport::Rescuable
 
     rescue_from(TokenError) { destroy! }
