@@ -2,12 +2,12 @@ PATH
   remote: .
   specs:
     action_push_native (0.3.1)
-      activejob (>= 8.0)
-      activerecord (>= 8.0)
+      activejob (>= 7.2)
+      activerecord (>= 7.2)
       googleauth (~> 1.14)
       httpx (~> 1.6)
       jwt (>= 2)
-      railties (>= 8.0)
+      railties (>= 7.2)
 
 GEM
   remote: https://rubygems.org/
