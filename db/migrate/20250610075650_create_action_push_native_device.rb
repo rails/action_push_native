@@ -1,4 +1,4 @@
-class CreateActionPushNativeDevice < ActiveRecord::Migration[7.1]
+class CreateActionPushNativeDevice < ActiveRecord::Migration[7.2]
   def change
     create_table :action_push_native_devices do |t|
       t.string :name

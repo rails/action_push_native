@@ -61,6 +61,20 @@ class ActionPushNativeTest < ActiveSupport::TestCase
     assert_equal expected_config, config
   end
 
+  test "config loads from first existent path" do
+    # Simulate what an engine could do - prepend its own config path
+    prepended_path = file_fixture("config/push_from_engine.yml").to_s
+    paths = Rails.application.paths["config/push"]
+    original_existent = paths.existent
+    paths.stubs(:existent).returns([ prepended_path ] + original_existent)
+
+    config = ActionPushNative.config
+
+    # Assert it loaded the prepended config (engine config has distinct values)
+    assert_equal "engine_key_id", config.dig(:apple, :application, :key_id)
+    assert_equal "engine_calendar_key_id", config.dig(:apple, :calendar, :key_id)
+  end
+
   private
     def stub_config(name)
       Rails.application.stubs(:config_for).returns(YAML.load_file(file_fixture("config/#{name}"), symbolize_names: true))
