@@ -15,16 +15,33 @@ module ActionPushNative
             message: {
               token: "123",
               data: { person: "Jacopo", badge: "1" },
+              notification: {
+                title: "Hi!",
+                body: "This is a push notification"
+              },
               android: {
                 notification: {
-                  title: "Hi!",
-                  body: "This is a push notification",
                   notification_count: 1,
                   sound: "default"
                 },
-                collapse_key: "321",
+                collapse_key: "12345",
                 priority: "normal"
+              },
+              apns: {
+                payload: {
+                  aps: {
+                    alert: {
+                      title: "Hi!",
+                      body: "This is a push notification"
+                    },
+                    sound: "default",
+                    "mutable-content": 1
+                  }
+                }
               }
+            },
+            android: {
+              collapse_key: "321"
             }
           }
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
@@ -64,7 +81,41 @@ module ActionPushNative
 
       test "push fcm payload can be overridden" do
         @notification.google_data = { android: { collapse_key: "changed", notification: nil }, data: nil }
-        payload = { message: { token: "123", android: { collapse_key: "changed", priority: "normal" } } }
+        payload = {
+          message: {
+            token: "123",
+            data: { person: "Jacopo", badge: "1" },
+            notification: {
+              title: "Hi!",
+              body: "This is a push notification"
+            },
+            android: {
+              notification: {
+                notification_count: 1,
+                sound: "default"
+              },
+              collapse_key: "12345",
+              priority: "normal"
+            },
+            apns: {
+              payload: {
+                aps: {
+                  alert: {
+                    title: "Hi!",
+                    body: "This is a push notification"
+                  },
+                  sound: "default",
+                  "mutable-content": 1
+                }
+              }
+            }
+          },
+          android: {
+            collapse_key: "changed",
+            notification: nil
+          },
+          data: nil
+        }
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
           with(body: payload.to_json, headers: { "Authorization"=>"Bearer fake_access_token" }).
           to_return(status: 200)

@@ -25,22 +25,40 @@ module ActionPushNative
         end
 
         def payload_from(notification)
-          deep_compact({
+          base_payload = {
             message: {
               token: notification.token,
               data: notification.data ? stringify(notification.data) : {},
+              notification: {
+                title: notification.title,
+                body: notification.body
+              },
               android: {
                 notification: {
-                  title: notification.title,
-                  body: notification.body,
                   notification_count: notification.badge,
                   sound: notification.sound
                 },
                 collapse_key: notification.thread_id,
                 priority: notification.high_priority == true ? "high" : "normal"
+              },
+              apns: {
+                payload: {
+                  aps: {
+                    alert: {
+                      title: notification.title,
+                      body: notification.body
+                    },
+                    sound: notification.sound || "default",
+                    "mutable-content": 1
+                  }
+                }
               }
-            }.deep_merge(notification.google_data ? stringify_data(notification.google_data) : {})
-          })
+            }
+          }
+
+          deep_compact(
+            base_payload.deep_merge(notification.google_data ? stringify_data(notification.google_data) : {})
+          )
         end
 
         def deep_compact(payload)
