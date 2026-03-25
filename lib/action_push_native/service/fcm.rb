@@ -44,6 +44,7 @@ module ActionPushNative
               apns: {
                 payload: {
                   aps: {
+                    badge: notification.badge,
                     alert: {
                       title: notification.title,
                       body: notification.body
