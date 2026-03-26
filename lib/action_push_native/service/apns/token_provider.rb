@@ -27,7 +27,7 @@ class ActionPushNative::Service::Apns::TokenProvider
     def generate
       payload = { iss: config.fetch(:team_id), iat: Time.now.utc.to_i }
       header  = { kid: config.fetch(:key_id) }
-      private_key = OpenSSL::PKey::EC.new(config.fetch(:encryption_key))
+      private_key = OpenSSL::PKey.read(config.fetch(:encryption_key))
       JWT.encode(payload, private_key, "ES256", header)
     end
 end
