@@ -179,6 +179,20 @@ module ActionPushNative
         end
       end
 
+      test "generate produces a valid ES256 JWT from a PEM key" do
+        ActionPushNative::Service::Apns::TokenProvider.any_instance.unstub(:fresh_access_token)
+
+        ec_key = OpenSSL::PKey::EC.generate("prime256v1")
+        config = { team_id: "TEAM123", key_id: "KEY456", encryption_key: ec_key.to_pem }
+        provider = ActionPushNative::Service::Apns::TokenProvider.new(config)
+
+        token = provider.fresh_access_token
+
+        decoded = JWT.decode(token, ec_key, true, algorithm: "ES256")
+        assert_equal "TEAM123", decoded.first["iss"]
+        assert_equal "KEY456", decoded.last["kid"]
+      end
+
       test "connect to APNs development server" do
         apns = Apns.new(@config.merge(connect_to_development_server: true))
         stub_request(:post, "https://api.sandbox.push.apple.com/3/device/123").to_return(status: 200)
