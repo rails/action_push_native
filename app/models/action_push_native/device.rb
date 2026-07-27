@@ -11,8 +11,8 @@ module ActionPushNative
     enum :platform, { apple: "apple", google: "google" }, validate: true
 
     def push(notification)
-       notification.token = token
-       ActionPushNative.service_for(platform, notification).push(notification)
+      notification.token = token
+      ActionPushNative.service_for(platform, notification).push(notification)
     rescue => error
       rescue_with_handler(error) || raise
     end
