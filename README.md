@@ -316,6 +316,9 @@ end
 
 Network errors keep the original exception as `error.cause`.
 
+The delivery job's retry ladder honors `retry_after` as a floor: retries
+still back off exponentially, but never sooner than the provider asked.
+
 ### Instrumentation
 
 Each provider round trip, token refresh included, emits a

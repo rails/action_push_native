@@ -23,6 +23,24 @@ module ActionPushNative
       assert_enqueued_jobs 0, only: ActionPushNative::NotificationJob
     end
 
+    test "a provider Retry-After floors the backoff delay" do
+      device = action_push_native_devices(:iphone)
+      Notification.any_instance.stubs(:deliver_to).raises(TooManyRequestsError.new("TooManyRequests", retry_after: 600))
+
+      ActionPushNative::NotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
+      perform_enqueued_jobs only: ActionPushNative::NotificationJob
+      assert_wait 600
+    end
+
+    test "a Retry-After shorter than the backoff delay defers to the ladder" do
+      device = action_push_native_devices(:iphone)
+      Notification.any_instance.stubs(:deliver_to).raises(TooManyRequestsError.new("TooManyRequests", retry_after: 5))
+
+      ActionPushNative::NotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
+      perform_enqueued_jobs only: ActionPushNative::NotificationJob
+      assert_wait 1.minute
+    end
+
     test "BadDeviceTopic errors are discarded" do
       device = action_push_native_devices(:iphone)
       Notification.any_instance.stubs(:deliver_to).raises(BadDeviceTopicError)
