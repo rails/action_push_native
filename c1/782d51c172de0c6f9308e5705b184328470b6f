@@ -1,0 +1,23 @@
+test/jobs/action_push_native/notification_job_test.rb
+  s_397e2065e2a5c3::t_4aa44da75a1ce3 26-43
+app/jobs/action_push_native/notification_job.rb
+  s_397e2065e2a5c3::t_91f06dc46d6938 57-67
+README.md
+  s_397e2065e2a5c3::t_a51ae07212cf8b 319-321
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.17",
+  "base_commit_sha": "c1782d51c172de0c6f9308e5705b184328470b6f",
+  "prompts": {},
+  "sessions": {
+    "s_397e2065e2a5c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "91dd0021-b9f4-456d-879a-f47af66f4465",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jeremy Daer <jeremy@37signals.com>"
+    }
+  }
+}
