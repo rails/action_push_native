@@ -54,5 +54,16 @@ module ActionPushNative
     def perform(notification_class, notification_attributes, device)
       notification_class.constantize.new(**notification_attributes).deliver_to(device)
     end
+
+    # A provider-mandated Retry-After floors the backoff: the ladder still
+    # stretches waits exponentially, but never schedules a retry sooner
+    # than the provider asked.
+    def retry_job(options = {})
+      if retry_after = options[:error].try(:retry_after)
+        options = options.merge(wait: [ retry_after, options[:wait] ].compact.max)
+      end
+
+      super(options)
+    end
   end
 end
