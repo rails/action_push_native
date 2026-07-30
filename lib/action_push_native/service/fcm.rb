@@ -4,6 +4,7 @@ module ActionPushNative
   module Service
     class Fcm
       include NetworkErrorHandling
+      prepend Instrumentation
 
       def initialize(config)
         @config = config

@@ -89,6 +89,24 @@ module ActionPushNative
         assert_equal 42, error.retry_after
       end
 
+      test "push instruments provider errors with their structured context" do
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 503, headers: { "Retry-After" => "15" },
+            body: { error: { message: "Service unavailable", status: "UNAVAILABLE" } }.to_json)
+
+        event = nil
+        capture = ->(e) { event = e }
+        ActiveSupport::Notifications.subscribed(capture, "push.action_push_native") do
+          assert_raises(ActionPushNative::ServiceUnavailableError) { @fcm.push(@notification) }
+        end
+
+        assert_equal :fcm, event.payload[:service]
+        assert_equal "123", event.payload[:device_token]
+        assert_equal "UNAVAILABLE", event.payload[:status]
+        assert_equal 15, event.payload[:retry_after]
+        assert_instance_of ActionPushNative::ServiceUnavailableError, event.payload[:exception_object]
+      end
+
       test "push fcm payload can be overridden" do
         @notification.google_data = { android: { collapse_key: "changed", notification: nil }, data: nil }
         payload = { message: { token: "123", android: { collapse_key: "changed", priority: "normal" } } }

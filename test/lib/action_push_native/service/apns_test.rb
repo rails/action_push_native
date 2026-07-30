@@ -106,6 +106,31 @@ module ActionPushNative
         assert_equal 30, error.retry_after
       end
 
+      test "push instruments a push.action_push_native event" do
+        stub_request(:post, "https://api.push.apple.com/3/device/123").to_return(status: 200)
+
+        event = capture_push_event { @apns.push(@notification) }
+
+        assert_equal :apns, event.payload[:service]
+        assert_equal "123", event.payload[:device_token]
+        assert_operator event.duration, :>, 0
+      end
+
+      test "push instruments provider errors with their structured context" do
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_return(status: 429, headers: { "Retry-After" => "30" }, body: { reason: "TooManyRequests" }.to_json)
+
+        event = capture_push_event do
+          assert_raises(ActionPushNative::TooManyRequestsError) { @apns.push(@notification) }
+        end
+
+        assert_equal :apns, event.payload[:service]
+        assert_equal 429, event.payload[:status]
+        assert_equal "TooManyRequests", event.payload[:reason]
+        assert_equal 30, event.payload[:retry_after]
+        assert_instance_of ActionPushNative::TooManyRequestsError, event.payload[:exception_object]
+      end
+
       test "network errors preserve the original exception as cause" do
         stub_request(:post, "https://api.push.apple.com/3/device/123").
           to_raise(Errno::ECONNRESET.new("Connection reset by peer"))
@@ -210,6 +235,12 @@ module ActionPushNative
       end
 
       private
+        def capture_push_event(&block)
+          event = nil
+          ActiveSupport::Notifications.subscribed(->(e) { event = e }, "push.action_push_native", &block)
+          event
+        end
+
         def build_notification
           ActionPushNative::Notification
             .with_apple(aps: { category: "readable" })
