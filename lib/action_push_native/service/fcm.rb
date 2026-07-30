@@ -71,31 +71,42 @@ module ActionPushNative
 
         def handle_fcm_error(response)
           status = response.status
-          reason = \
+          error = \
             begin
-              JSON.parse(response.body.to_s).dig("error", "message")
+              JSON.parse(response.body.to_s)["error"]
             rescue JSON::ParserError
-              response.body.to_s
+              nil
+            end
+          message = error ? error["message"] : response.body.to_s
+
+          Rails.logger.error("FCM response error #{status}: #{message}")
+
+          error_class = \
+            case
+            when message =~ /message is too big/i
+              ActionPushNative::PayloadTooLargeError
+            when status == 400
+              ActionPushNative::BadRequestError
+            when status == 404
+              ActionPushNative::TokenError
+            when status.in?([ 401, 403 ])
+              ActionPushNative::ForbiddenError
+            when status == 429
+              ActionPushNative::TooManyRequestsError
+            when status == 503
+              ActionPushNative::ServiceUnavailableError
+            else
+              ActionPushNative::InternalServerError
             end
 
-          Rails.logger.error("FCM response error #{status}: #{reason}")
+          raise error_class.new(message, service: :fcm, status: error&.fetch("status", nil) || status,
+            reason: error_info_reason_from(error), retry_after: response.headers["retry-after"])
+        end
 
-          case
-          when reason =~ /message is too big/i
-            raise ActionPushNative::PayloadTooLargeError, reason
-          when status == 400
-            raise ActionPushNative::BadRequestError, reason
-          when status == 404
-            raise ActionPushNative::TokenError, reason
-          when status.in?([ 401, 403 ])
-            raise ActionPushNative::ForbiddenError, reason
-          when status == 429
-            raise ActionPushNative::TooManyRequestsError, reason
-          when status == 503
-            raise ActionPushNative::ServiceUnavailableError, reason
-          else
-            raise ActionPushNative::InternalServerError, reason
-          end
+        # The bounded, machine-readable token lives in the google.rpc.ErrorInfo
+        # detail (QUOTA_EXCEEDED, UNREGISTERED, ...); the message is free-form.
+        def error_info_reason_from(error)
+          Array(error&.fetch("details", nil)).filter_map { |detail| detail["reason"] }.first
         end
     end
   end

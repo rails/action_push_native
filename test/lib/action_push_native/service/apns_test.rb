@@ -92,6 +92,30 @@ module ActionPushNative
         assert_equal "Timed out after 5 seconds while waiting for a connection", error.message
       end
 
+      test "response errors carry structured provider context" do
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_return(status: 503, headers: { "Retry-After" => "30" }, body: { reason: "ServiceUnavailable" }.to_json)
+
+        error = assert_raises ActionPushNative::ServiceUnavailableError do
+          @apns.push(@notification)
+        end
+        assert_equal "ServiceUnavailable", error.message
+        assert_equal :apns, error.service
+        assert_equal 503, error.status
+        assert_equal "ServiceUnavailable", error.reason
+        assert_equal 30, error.retry_after
+      end
+
+      test "network errors preserve the original exception as cause" do
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_raise(Errno::ECONNRESET.new("Connection reset by peer"))
+
+        error = assert_raises ActionPushNative::ConnectionError do
+          @apns.push(@notification)
+        end
+        assert_instance_of Errno::ECONNRESET, error.cause
+      end
+
       test "push apns payload can be overridden" do
         @notification.apple_data = { aps: { "thread-id": "changed" } }
 
