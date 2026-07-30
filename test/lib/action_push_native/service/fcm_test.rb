@@ -62,6 +62,33 @@ module ActionPushNative
         end
       end
 
+      test "response errors carry structured provider context" do
+        body = \
+          {
+            error: {
+              code: 429,
+              message: "Sending limit exceeded",
+              status: "RESOURCE_EXHAUSTED",
+              details: [
+                { "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "42s" },
+                { "@type": "type.googleapis.com/google.rpc.ErrorInfo", reason: "QUOTA_EXCEEDED", domain: "fcm.googleapis.com" }
+              ]
+            }
+          }
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 429, headers: { "Retry-After" => "42" }, body: body.to_json)
+
+        error = assert_raises ActionPushNative::TooManyRequestsError do
+          @fcm.push(@notification)
+        end
+        assert_equal "Sending limit exceeded", error.message
+        assert_equal :fcm, error.service
+        assert_equal "RESOURCE_EXHAUSTED", error.status
+        assert_equal "QUOTA_EXCEEDED", error.reason
+        assert_equal 42, error.retry_after
+      end
+
       test "push fcm payload can be overridden" do
         @notification.google_data = { android: { collapse_key: "changed", notification: nil }, data: nil }
         payload = { message: { token: "123", android: { collapse_key: "changed", priority: "normal" } } }

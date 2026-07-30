@@ -77,28 +77,32 @@ module ActionPushNative
 
           Rails.logger.error("APNs response error #{status}: #{reason}") if reason
 
-          case [ status, reason ]
-          in [ 400, "BadDeviceToken" ]
-            raise ActionPushNative::TokenError, reason
-          in [ 400, "DeviceTokenNotForTopic" ]
-            raise ActionPushNative::BadDeviceTopicError, reason
-          in [ 400, _ ]
-            raise ActionPushNative::BadRequestError, reason
-          in [ 403, _ ]
-            raise ActionPushNative::ForbiddenError, reason
-          in [ 404, _ ]
-            raise ActionPushNative::NotFoundError, reason
-          in [ 410, _ ]
-            raise ActionPushNative::TokenError, reason
-          in [ 413, _ ]
-            raise ActionPushNative::PayloadTooLargeError, reason
-          in [ 429, _ ]
-            raise ActionPushNative::TooManyRequestsError, reason
-          in [ 503, _ ]
-            raise ActionPushNative::ServiceUnavailableError, reason
-          else
-            raise ActionPushNative::InternalServerError, reason
-          end
+          error_class = \
+            case [ status, reason ]
+            in [ 400, "BadDeviceToken" ]
+              ActionPushNative::TokenError
+            in [ 400, "DeviceTokenNotForTopic" ]
+              ActionPushNative::BadDeviceTopicError
+            in [ 400, _ ]
+              ActionPushNative::BadRequestError
+            in [ 403, _ ]
+              ActionPushNative::ForbiddenError
+            in [ 404, _ ]
+              ActionPushNative::NotFoundError
+            in [ 410, _ ]
+              ActionPushNative::TokenError
+            in [ 413, _ ]
+              ActionPushNative::PayloadTooLargeError
+            in [ 429, _ ]
+              ActionPushNative::TooManyRequestsError
+            in [ 503, _ ]
+              ActionPushNative::ServiceUnavailableError
+            else
+              ActionPushNative::InternalServerError
+            end
+
+          raise error_class.new(reason, service: :apns, status: status, reason: reason,
+            retry_after: response.headers["retry-after"])
         end
     end
   end
