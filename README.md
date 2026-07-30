@@ -300,6 +300,35 @@ class CustomDevice
 end
 ```
 
+### Structured errors
+
+Every error descends from `ActionPushNative::Error`. Errors raised from a
+provider response carry the context of that response:
+
+```ruby
+rescue ActionPushNative::TooManyRequestsError => error
+  error.service     # :apns or :fcm
+  error.status      # APNs: HTTP status (429); FCM: google.rpc status token ("RESOURCE_EXHAUSTED")
+  error.reason      # APNs: reason token ("TooManyRequests"); FCM: ErrorInfo reason ("QUOTA_EXCEEDED")
+  error.retry_after # provider-mandated wait, in seconds, when the response carried Retry-After
+end
+```
+
+Network errors keep the original exception as `error.cause`.
+
+### Instrumentation
+
+Each provider round trip, token refresh included, emits a
+`push.action_push_native` Active Support notification with `service:` and
+`device_token:` in the payload. When the provider errors, the payload also
+carries `status:`, `reason:`, `retry_after:`, and `exception_object:`.
+
+```ruby
+ActiveSupport::Notifications.subscribe "push.action_push_native" do |event|
+  StatsD.measure "push.#{event.payload[:service]}", event.duration
+end
+```
+
 ## `ActionPushNative::Notification` attributes
 
 | Name           | Description
