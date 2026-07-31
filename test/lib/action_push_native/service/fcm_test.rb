@@ -71,7 +71,10 @@ module ActionPushNative
               status: "RESOURCE_EXHAUSTED",
               details: [
                 { "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "42s" },
-                { "@type": "type.googleapis.com/google.rpc.ErrorInfo", reason: "QUOTA_EXCEEDED", domain: "fcm.googleapis.com" }
+                { "@type": "type.googleapis.com/google.rpc.ErrorInfo", reason: "QUOTA_EXCEEDED", domain: "fcm.googleapis.com" },
+                { "@type": "type.googleapis.com/google.rpc.QuotaFailure", violations: [
+                  { subject: "project:123456", description: "Message rate limit exceeded for device" }
+                ] }
               ]
             }
           }
@@ -87,6 +90,62 @@ module ActionPushNative
         assert_equal "RESOURCE_EXHAUSTED", error.status
         assert_equal "QUOTA_EXCEEDED", error.reason
         assert_equal 42, error.retry_after
+        assert_equal [ { "subject" => "project:123456", "description" => "Message rate limit exceeded for device" } ],
+          error.quota_violations
+      end
+
+      test "quota violations concatenate across QuotaFailure details" do
+        body = \
+          {
+            error: {
+              code: 429,
+              message: "Sending limit exceeded",
+              status: "RESOURCE_EXHAUSTED",
+              details: [
+                { "@type": "type.googleapis.com/google.rpc.QuotaFailure", violations: [ { subject: "device:1" } ] },
+                { "@type": "type.googleapis.com/google.rpc.QuotaFailure", violations: [ { subject: "device:2" } ] }
+              ]
+            }
+          }
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 429, body: body.to_json)
+
+        error = assert_raises ActionPushNative::TooManyRequestsError do
+          @fcm.push(@notification)
+        end
+        assert_equal [ { "subject" => "device:1" }, { "subject" => "device:2" } ], error.quota_violations
+      end
+
+      test "malformed error details read as no quota violations" do
+        body = \
+          {
+            error: {
+              code: 429,
+              message: "Sending limit exceeded",
+              status: "RESOURCE_EXHAUSTED",
+              details: [
+                "not a hash",
+                { "@type": "type.googleapis.com/google.rpc.QuotaFailure", violations: "not an array" }
+              ]
+            }
+          }
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 429, body: body.to_json)
+
+        error = assert_raises ActionPushNative::TooManyRequestsError do
+          @fcm.push(@notification)
+        end
+        assert_equal [], error.quota_violations
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 429, body: { error: { message: "Sending limit exceeded", status: "RESOURCE_EXHAUSTED" } }.to_json)
+
+        error = assert_raises ActionPushNative::TooManyRequestsError do
+          @fcm.push(@notification)
+        end
+        assert_equal [], error.quota_violations
       end
 
       test "push instruments provider errors with their structured context" do

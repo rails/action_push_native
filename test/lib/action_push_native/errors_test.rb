@@ -25,5 +25,18 @@ module ActionPushNative
       assert_equal "boom", TooManyRequestsError.new("boom", reason: "QUOTA_EXCEEDED").message
       assert_equal "QUOTA_EXCEEDED", TooManyRequestsError.new(reason: "QUOTA_EXCEEDED").message
     end
+
+    test "quota_violations defaults to an empty array" do
+      assert_equal [], TooManyRequestsError.new.quota_violations
+    end
+
+    test "quota_violations keeps hash entries and drops the rest, frozen" do
+      violation = { "subject" => "device:1", "description" => "rate limited" }
+      error = TooManyRequestsError.new(quota_violations: [ violation, "junk", nil ])
+
+      assert_equal [ violation ], error.quota_violations
+      assert error.quota_violations.frozen?
+      assert error.quota_violations.first.frozen?
+    end
   end
 end
