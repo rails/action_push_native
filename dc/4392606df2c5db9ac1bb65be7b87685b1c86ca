@@ -1,0 +1,19 @@
+test/lib/action_push_native/errors_test.rb
+  s_397e2065e2a5c3::t_c07856eb19a0a6 1-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "dc4392606df2c5db9ac1bb65be7b87685b1c86ca",
+  "prompts": {},
+  "sessions": {
+    "s_397e2065e2a5c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "91dd0021-b9f4-456d-879a-f47af66f4465",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jeremy Daer <jeremy@37signals.com>"
+    }
+  }
+}
