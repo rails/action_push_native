@@ -101,13 +101,26 @@ module ActionPushNative
             end
 
           raise error_class.new(message, service: :fcm, status: error&.fetch("status", nil) || status,
-            reason: error_info_reason_from(error), retry_after: response.headers["retry-after"])
+            reason: error_info_reason_from(error), retry_after: response.headers["retry-after"],
+            quota_violations: quota_violations_from(error))
         end
 
         # The bounded, machine-readable token lives in the google.rpc.ErrorInfo
         # detail (QUOTA_EXCEEDED, UNREGISTERED, ...); the message is free-form.
         def error_info_reason_from(error)
-          Array(error&.fetch("details", nil)).filter_map { |detail| detail["reason"] }.first
+          details_of_type(error, "type.googleapis.com/google.rpc.ErrorInfo").filter_map { |detail| detail["reason"] }.first
+        end
+
+        # QuotaFailure details enumerate the limits that were hit, distinguishing
+        # per-device and per-topic throttling from project-wide quota.
+        def quota_violations_from(error)
+          details_of_type(error, "type.googleapis.com/google.rpc.QuotaFailure").flat_map do |detail|
+            detail["violations"].is_a?(Array) ? detail["violations"] : []
+          end
+        end
+
+        def details_of_type(error, type)
+          Array(error&.fetch("details", nil)).select { |detail| detail.is_a?(Hash) && detail["@type"] == type }
         end
     end
   end

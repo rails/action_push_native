@@ -307,10 +307,11 @@ provider response carry the context of that response:
 
 ```ruby
 rescue ActionPushNative::TooManyRequestsError => error
-  error.service     # :apns or :fcm
-  error.status      # APNs: HTTP status (429); FCM: google.rpc status token ("RESOURCE_EXHAUSTED")
-  error.reason      # APNs: reason token ("TooManyRequests"); FCM: ErrorInfo reason ("QUOTA_EXCEEDED")
-  error.retry_after # provider-mandated wait, in seconds, when the response carried Retry-After
+  error.service          # :apns or :fcm
+  error.status           # APNs: HTTP status (429); FCM: google.rpc status token ("RESOURCE_EXHAUSTED")
+  error.reason           # APNs: reason token ("TooManyRequests"); FCM: ErrorInfo reason ("QUOTA_EXCEEDED")
+  error.retry_after      # provider-mandated wait, in seconds, when the response carried Retry-After
+  error.quota_violations # FCM only: google.rpc.QuotaFailure violations, when the response included them
 end
 ```
 

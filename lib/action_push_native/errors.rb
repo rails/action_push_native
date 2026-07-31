@@ -5,15 +5,17 @@ require "time"
 module ActionPushNative
   # Base class for Action Push Native errors. Errors raised from a provider
   # response carry structured context: the service that answered, the
-  # provider's status and reason tokens, and any Retry-After it mandated.
+  # provider's status and reason tokens, any Retry-After it mandated, and
+  # any quota violations it reported (FCM).
   class Error < StandardError
-    attr_reader :service, :status, :reason, :retry_after
+    attr_reader :service, :status, :reason, :retry_after, :quota_violations
 
-    def initialize(message = nil, service: nil, status: nil, reason: nil, retry_after: nil)
+    def initialize(message = nil, service: nil, status: nil, reason: nil, retry_after: nil, quota_violations: nil)
       @service = service
       @status = status
       @reason = reason
       @retry_after = retry_after_in_seconds(retry_after)
+      @quota_violations = normalized_quota_violations(quota_violations)
       super(message || reason)
     end
 
@@ -30,6 +32,12 @@ module ActionPushNative
         end
       rescue ArgumentError
         nil
+      end
+
+      # Quota violations arrive as raw google.rpc.QuotaFailure violation hashes
+      # and pass through losslessly.
+      def normalized_quota_violations(violations)
+        Array(violations).grep(Hash).map(&:freeze).freeze
       end
   end
 
