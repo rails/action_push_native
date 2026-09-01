@@ -50,6 +50,18 @@ module ActionPushNative
         end
 
         stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 400, body: { error: { message: "The registration token is not a valid FCM registration token", status: "INVALID_ARGUMENT" } }.to_json)
+        assert_raises ActionPushNative::TokenError do
+          @fcm.push(@notification)
+        end
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_return(status: 400, body: { error: { message: "Invalid JSON payload received", status: "INVALID_ARGUMENT" } }.to_json)
+        assert_raises ActionPushNative::BadRequestError do
+          @fcm.push(@notification)
+        end
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
           to_return(status: 500, body: "Not a JSON")
         assert_raises ActionPushNative::InternalServerError do
           @fcm.push(@notification)

@@ -86,6 +86,10 @@ module ActionPushNative
             case
             when message =~ /message is too big/i
               ActionPushNative::PayloadTooLargeError
+            when status == 400 && message =~ /registration token is not a valid/i
+              # FCM reports invalid registration tokens as 400 INVALID_ARGUMENT rather
+              # than 404 UNREGISTERED, and only the message singles the token out
+              ActionPushNative::TokenError
             when status == 400
               ActionPushNative::BadRequestError
             when status == 404
