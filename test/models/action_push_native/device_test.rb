@@ -37,5 +37,13 @@ module ActionPushNative
       end
       assert iphone.destroyed?
     end
+
+    test "token is unique across devices" do
+      ActionPushNative::Device.create!(token: "shared-token", platform: "apple")
+
+      assert_raises ActiveRecord::RecordNotUnique do
+        ActionPushNative::Device.create!(token: "shared-token", platform: "google")
+      end
+    end
   end
 end

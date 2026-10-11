@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_10_075650) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_08_120000) do
   create_table "action_push_native_devices", force: :cascade do |t|
     t.string "name"
     t.string "platform", null: false
@@ -20,5 +20,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_10_075650) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["owner_type", "owner_id"], name: "index_action_push_native_devices_on_owner"
+    t.index ["token"], name: "index_action_push_native_devices_on_token", unique: true
   end
 end
