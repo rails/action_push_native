@@ -72,6 +72,18 @@ module ActionPushNative
         assert_raises ActionPushNative::ConnectionError do
           @fcm.push(@notification)
         end
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_raise(HTTPX::ResolveError.new("Can't resolve fcm.googleapis.com"))
+        assert_raises ActionPushNative::ConnectionError do
+          @fcm.push(@notification)
+        end
+
+        stub_request(:post, "https://fcm.googleapis.com/v1/projects/your_project_id/messages:send").
+          to_raise(HTTPX::Error.new("Unexpected network error"))
+        assert_raises HTTPX::Error do
+          @fcm.push(@notification)
+        end
       end
 
       test "response errors carry structured provider context" do
