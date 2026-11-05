@@ -9,7 +9,7 @@ module ActionPushNative::Service::NetworkErrorHandling
       raise ActionPushNative::TimeoutError, error.message, cause: error
     when Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED, Errno::EHOSTUNREACH,
       SocketError, IOError, EOFError, Errno::EPIPE, Errno::EINVAL, HTTPX::ConnectionError,
-      HTTPX::TLSError, HTTPX::Connection::HTTP2::Error
+      HTTPX::TLSError, HTTPX::ResolveError, HTTPX::Connection::HTTP2::Error
       raise ActionPushNative::ConnectionError, error.message, cause: error
     when OpenSSL::SSL::SSLError
       if error.message.include?("SSL_connect")
@@ -17,6 +17,8 @@ module ActionPushNative::Service::NetworkErrorHandling
       else
         raise error
       end
+    else
+      raise error
     end
   end
 end

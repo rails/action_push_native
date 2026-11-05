@@ -141,6 +141,25 @@ module ActionPushNative
         assert_instance_of Errno::ECONNRESET, error.cause
       end
 
+      test "DNS resolution failures raise a connection error" do
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_raise(HTTPX::ResolveError.new("Can't resolve api.push.apple.com"))
+
+        error = assert_raises ActionPushNative::ConnectionError do
+          @apns.push(@notification)
+        end
+        assert_instance_of HTTPX::ResolveError, error.cause
+      end
+
+      test "unhandled network errors are raised" do
+        stub_request(:post, "https://api.push.apple.com/3/device/123").
+          to_raise(HTTPX::Error.new("Unexpected network error"))
+
+        assert_raises HTTPX::Error do
+          @apns.push(@notification)
+        end
+      end
+
       test "push apns payload can be overridden" do
         @notification.apple_data = { aps: { "thread-id": "changed" } }
 
