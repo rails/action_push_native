@@ -67,7 +67,44 @@ module ActionPushNative
       assert_enqueued_jobs 1, only: ActionPushNative::NotificationJob
     end
 
+    test "retries are not reported by default" do
+      device = action_push_native_devices(:iphone)
+      Notification.any_instance.stubs(:deliver_to).raises(TimeoutError)
+
+      ActionPushNative::NotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
+      assert_no_error_reported do
+        perform_enqueued_jobs only: ActionPushNative::NotificationJob
+      end
+      assert_enqueued_jobs 1, only: ActionPushNative::NotificationJob
+    end
+
+    test "retries are reported when report_job_retries is enabled in a subclass" do
+      device = action_push_native_devices(:iphone)
+      Notification.any_instance.stubs(:deliver_to).raises(TimeoutError)
+
+      ReportingNotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
+      report = assert_error_reported(TimeoutError) do
+        perform_enqueued_jobs only: ReportingNotificationJob
+      end
+      assert_equal "application.active_job", report.source
+      assert_enqueued_jobs 1, only: ReportingNotificationJob
+    end
+
+    test "retries with a provider backoff are reported when report_job_retries is enabled in a subclass" do
+      device = action_push_native_devices(:iphone)
+      Notification.any_instance.stubs(:deliver_to).raises(TooManyRequestsError)
+
+      ReportingNotificationJob.perform_later("ApplicationPushNotification", @notification_attributes, device)
+      assert_error_reported(TooManyRequestsError) do
+        perform_enqueued_jobs only: ReportingNotificationJob
+      end
+    end
+
     private
+      class ReportingNotificationJob < ActionPushNative::NotificationJob
+        self.report_job_retries = true
+      end
+
       def assert_wait(seconds)
         job = enqueued_jobs_with(only: ActionPushNative::NotificationJob).last
         delay = job["scheduled_at"].to_time - job["enqueued_at"].to_time

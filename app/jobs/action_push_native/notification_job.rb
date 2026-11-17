@@ -59,6 +59,10 @@ module ActionPushNative
     # stretches waits exponentially, but never schedules a retry sooner
     # than the provider asked.
     def retry_job(options = {})
+      if report_job_retries && options[:error]
+        Rails.error.report(options[:error], source: "application.active_job")
+      end
+
       if retry_after = options[:error].try(:retry_after)
         options = options.merge(wait: [ retry_after, options[:wait] ].compact.max)
       end
